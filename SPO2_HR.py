@@ -5,14 +5,14 @@ import scipy.signal as sig
 import pylab
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
-############## CONSTANT
+############ CONSTANT
 FPS = 25
 A = 104.5
 B = 16.5
-Lf = 7
+Lf = 9
 Lf_spo2=13
-############## Functions
-def spo2_calc(IRmax,IRminl,IRminr,Rmax,Rminl,Rminr,minl_index,minr_index):
+############ Functions
+def spo2_calc(IRmax,IRminl,IRminr,Rmax,Rminl,Rminr,A,B):
     Red_DC=(Rminl+Rminr)/2
     Red_AC = Rmax-Red_DC
     IR_DC=(IRminl+IRminr)/2
@@ -97,7 +97,7 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
             #SPO2
             if len(rmin)>1:
                 Flag_extremum=True
-                spo2=spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new,left_index,i)
+                spo2=spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new,A,B)
                 spo2_mas.append(spo2)
                 Told=T
                 error,T=CheckForErrors(left_index,max_index,i,Told,spo2,Virmin,Virmax,Virmin_new)
@@ -122,7 +122,6 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
             irmin_med,irmax_med_index,irmin_med_index,spo2_mas,error_mas,HR_counter
 ##### OPEN
 def Filename_request():
-    
     root = Tk()
     root.withdraw()
     root.update() # we don't want a full GUI, so keep the root window from appearing
@@ -137,7 +136,7 @@ Red_read = np.array(records[2:,0],dtype=int)
 IR_read = np.array(records[2:,1],dtype=int)
 #Big MEDIAN = To improve performance (may be excluded)
 IR_mean = sig.medfilt(IR_read,81)
-IR = IR_read - IR_mean
+IR = IR_read - IR_mean # without DC
 # Small MEDIAN
 IR_med = sig.medfilt(IR,Lf)
 irmax,irmin,irmax_i,irmin_i,rmax,rmin,rmax_i,rmin_i,irmax_med,irmin_med,irmax_med_i,irmin_med_i,spo2,errors,HR_raw= MaxMin_search(IR_med,IR_read,Red_read)  
@@ -194,12 +193,14 @@ plt.title("RED")
 plt.subplot(223)
 plt.ylim((0, 4))
 plt.grid(axis='both',linestyle = '--')
-plt.plot(errors,color='purple',linewidth ='3')
+plt.plot(errors,color='purple',linewidth ='3')#errors
 plt.title("Errors")
+
 
 plt.subplot(222)
 plt.grid(axis='both',linestyle = '--')
 plt.plot(IR_read)
+plt.plot(IR_mean,color='purple',linewidth ='3')
 plt.plot(irmax_i,irmax,'o')
 plt.plot(irmin_i,irmin,'o')
 plt.title("IR pulses = "+str(len(irmax))+"("+str(int(len(irmax)/T_in_minute))+") /  HR= "+str(HR))
