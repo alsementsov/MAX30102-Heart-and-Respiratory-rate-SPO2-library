@@ -24,7 +24,7 @@ void setup() {
   maxim_max30102_reset(); //resets the MAX30102
   delay(1000);
   maxim_max30102_init();  //initialize the MAX30102
-  Serial.println("START");
+  //Serial.println("START");
   flag_error = false;
   j=0;
   k=0;
@@ -51,15 +51,16 @@ void loop() {
  
     IR[i] =(int32_t)ir_buffer[j]-(int32_t)Median_filter(ir_buffer[i]);
     IR_med[i]=Median_filter_9(IR[i]);
-    //Serial.print(IR[k]); 
-    //Serial.print("\t");
-    //Serial.println(IR_med[i]);
+    Serial.print(ir_buffer[j+k]); 
+    Serial.print("\t");
+    Serial.println(IR_med[i]);
+  
 
   }
   struct result res = MaxMin_search(IR_med,IR_med,IR_med,BUFFER_SIZE);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
-  Serial.print("====================> Npulses=");Serial.print(res.HR);Serial.print(" / HR=");Serial.print(HR);
-  Serial.print(" / SpO2=");Serial.println(res.spo2);
+  //Serial.print("====================> Npulses=");Serial.print(res.HR);Serial.print(" / HR=");Serial.print(HR);
+  //Serial.print(" / SpO2=");Serial.println(res.spo2);
 
   //rf_heart_rate_and_oxygen_saturation(ir_buffer, BUFFER_SIZE, red_buffer, &n_spo2, &ch_spo2_valid, &n_heart_rate, &ch_hr_valid, &ratio, &correl); 
 
