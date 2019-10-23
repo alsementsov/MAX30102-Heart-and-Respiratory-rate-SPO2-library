@@ -84,7 +84,7 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
     uint8_t Errorval = 0;
     if (Told!=0){
         float div=float(T)/float(Told);
-        Serial.print(T);Serial.print("/");Serial.print(Told);Serial.print("/");Serial.println(div);
+        //Serial.print(T);Serial.print("/");Serial.print(Told);Serial.print("/");Serial.println(div);
         if ((div > 2.5) or (div < 0.4))
             Errorval=1;
     }
@@ -174,11 +174,11 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 Told=T;
                 struct errors error_res = CheckForErrors(left_index,max_index,elm.index,Told,spo2,Virmin,Virmax,Virmin_new);
                 error_mas[i]=error_res.error;
-                //Serial.print("-------------->ERROR= ");Serial.print(error_mas[i]);Serial.print(" /  SpO2= ");Serial.println(spo2);
+                Serial.print("-------------->ERROR= ");Serial.print(error_mas[i]);Serial.print(" /  SpO2= ");Serial.println(spo2);
                 T = error_res.T;
                 if (error_res.error<=1){
                     spo2_mas[HR_counter] = spo2;
-                    Serial.print("@ Heartbeat: ");Serial.println(HR_counter);
+                    //Serial.print("@ Heartbeat: ");Serial.println(HR_counter);
                     HR_counter++;
                 }
             }
