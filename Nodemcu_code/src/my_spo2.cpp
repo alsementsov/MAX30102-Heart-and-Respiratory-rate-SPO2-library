@@ -158,7 +158,7 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 searching_max = false;
                 Vrmax=redmas_orig[elm.index];
                 max_index=elm.index;
-                //Serial.print("MAX index=");Serial.print(elm.index);Serial.print("/ MAX =");Serial.println(Virmax);
+                //Serial.print("MAX index=");Serial.print(elm.index);Serial.print("/ IR_MAX =");Serial.print(Virmax);Serial.print("/ RED_MAX =");Serial.println(Vrmax);
             }
         }
         else if ((irmas[i] > irmas[i-1])and(delta>=1)){
@@ -166,7 +166,7 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
             int32_t Virmin_new = elm.value;
             searching_max = true;
             int32_t Vrmin_new=redmas_orig[elm.index];
-            //Serial.print("MIN index=");Serial.print(elm.index);Serial.print("/ MIN =");Serial.println(Virmin_new);
+            //Serial.print("MIN index=");Serial.print(elm.index);Serial.print("/ IR_MIN =");Serial.print(Virmin_new);Serial.print("/ RED_MIN =");Serial.println(Vrmin_new);
             //SPO2
             if (Virmax!=0){
                 Flag_extremum=true;
@@ -174,11 +174,11 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 Told=T;
                 struct errors error_res = CheckForErrors(left_index,max_index,elm.index,Told,spo2,Virmin,Virmax,Virmin_new);
                 error_mas[i]=error_res.error;
-                Serial.print("-------------->ERROR= ");Serial.print(error_mas[i]);Serial.print(" /  SpO2= ");Serial.println(spo2);
+                Serial.print("ERROR = ");Serial.println(error_mas[i]);
                 T = error_res.T;
                 if (error_res.error<=1){
                     spo2_mas[HR_counter] = spo2;
-                    //Serial.print("@ Heartbeat: ");Serial.println(HR_counter);
+                    Serial.print("~~~~ Heartbeat: ");Serial.print(HR_counter);Serial.print(" /  SpO2= ");Serial.println(spo2);
                     HR_counter++;
                 }
             }
