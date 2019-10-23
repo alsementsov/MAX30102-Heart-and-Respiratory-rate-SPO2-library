@@ -9,7 +9,7 @@ struct result{
     uint8_t error;
     uint16_t HR;};
 struct element{
-    uint32_t value;
+    int32_t value;
     uint16_t index;};
 struct errors{
     uint8_t error;
@@ -19,7 +19,7 @@ const int n = 20;
 const float A = 104.5;
 const float B = 16.5;
 
-uint32_t irmas [n] = {100,50,100,200,300,400,230,70,120,140,250,360,190,90,150,160,270,37,100,180};
+int32_t irmas [n] = {100,50,100,200,300,400,230,70,120,140,250,360,190,90,150,160,270,37,100,180};
 
 float Spo2_calc(uint32_t IRmax,uint32_t IRminl,uint32_t IRminr,uint32_t Rmax,uint32_t Rminl,int32_t Rminr,float A,float B){
     float Red_DC=(Rminl+Rminr)/2;
@@ -30,7 +30,7 @@ float Spo2_calc(uint32_t IRmax,uint32_t IRminl,uint32_t IRminr,uint32_t Rmax,uin
     return out;
   };
 /////// Errors //////////
-struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16_t Told,float spo2,uint32_t Vl,uint32_t Vc,uint32_t Vr){
+struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16_t Told,float spo2,int32_t Vl,int32_t Vc,int32_t Vr){
     uint16_t T = Right-Left;
     uint8_t Errorval = 0;
     if (Told!=0){
@@ -46,8 +46,8 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
     return out;
 };
 
-struct element Back_to_extremum (uint32_t* ptrmas,bool up,uint32_t* startmas){
-      uint32_t* ptr;
+struct element Back_to_extremum (int32_t* ptrmas,bool up,int32_t* startmas){
+      int32_t* ptr;
       ptr = ptrmas;
       while (((*(ptr-1) >= *ptr)and(up==true))or((*(ptr-1) <= *ptr)and(up==false)))
       {
@@ -76,15 +76,15 @@ float StaticMedianFilter(float *array,int length){
 	return float(array[length/2]+array[(length/2)-1])/2;
 }
 
-struct result MaxMin_search(uint32_t *irmas,uint32_t *irmas_orig,uint32_t *redmas_orig,uint16_t length_mas){
+struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_orig,uint16_t length_mas){
 
     float spo2_mas[10] = {};
     uint8_t error_mas[length_mas]={};
 
-    uint32_t Virmax = 0;
-    uint32_t Virmin=0;
-    uint32_t Vrmax=0;
-    uint32_t Vrmin=0;
+    int32_t Virmax = 0;
+    int32_t Virmin=0;
+    int32_t Vrmax=0;
+    int32_t Vrmin=0;
     uint16_t left_index=0;
     uint16_t max_index=0;
     uint16_t T=0;
@@ -102,7 +102,7 @@ struct result MaxMin_search(uint32_t *irmas,uint32_t *irmas_orig,uint32_t *redma
         cout <<"["<<i<<"]="<<irmas[i]<<endl;
         Flag_extremum=false;
         error_mas[i]=0;
-        uint32_t delta=abs(abs(irmas[i])-abs(irmas[i-1]));
+        int32_t delta=abs(abs(irmas[i])-abs(irmas[i-1]));
         if (searching_max){
             if ((irmas[i] < irmas[i-1])and(delta>=1)){//Восстановить после отладки в 5
                 elm = Back_to_extremum(&irmas_orig[i],true,irmas_orig);
@@ -115,9 +115,9 @@ struct result MaxMin_search(uint32_t *irmas,uint32_t *irmas_orig,uint32_t *redma
         }
         else if ((irmas[i] > irmas[i-1])and(delta>=1)){
             elm = Back_to_extremum(&irmas_orig[i],false,irmas_orig);
-            uint32_t Virmin_new = elm.value;
+            int32_t Virmin_new = elm.value;
             searching_max = true;
-            uint32_t Vrmin_new=redmas_orig[elm.index];
+            int32_t Vrmin_new=redmas_orig[elm.index];
             cout <<"-----------------min_index="<<elm.index<<" / MIN ="<<Virmin_new<<"/Vrmin = "<<Vrmin_new<< endl;
             //SPO2
             if (Virmax!=0){
@@ -153,11 +153,11 @@ struct result MaxMin_search(uint32_t *irmas,uint32_t *irmas_orig,uint32_t *redma
     return out;
 }
 
-uint16_t Median_filter(uint32_t datum){
+int32_t Median_filter(int32_t datum){
   struct pair
   {
     struct pair   *point;                              /* Pointers forming list linked in sorted order */
-    uint32_t  value;                                   /* Values to sort */
+    int32_t  value;                                   /* Values to sort */
   };
   static struct pair buffer[MEDIAN_FILTER_SIZE] = {0}; /* Buffer of nwidth pairs */
   static struct pair *datpoint = buffer;               /* Pointer into circular buffer of data */
