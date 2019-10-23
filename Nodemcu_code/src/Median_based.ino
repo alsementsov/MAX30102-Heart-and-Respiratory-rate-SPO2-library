@@ -59,7 +59,7 @@ void loop() {
   struct result res = MaxMin_search(IR_med,IR_med,IR_med,BUFFER_SIZE);
   int T_in_minute = BUFFER_SIZE/(60*FS);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
-  Serial.print("Npulses=");Serial.print(res.HR);Serial.print(" / HR=");Serial.print(HR);
+  Serial.print("====================> Npulses=");Serial.print(res.HR);Serial.print(" / HR=");Serial.print(HR);
   Serial.print(" / SpO2=");Serial.println(res.spo2);
 
   //rf_heart_rate_and_oxygen_saturation(ir_buffer, BUFFER_SIZE, red_buffer, &n_spo2, &ch_spo2_valid, &n_heart_rate, &ch_hr_valid, &ratio, &correl); 
