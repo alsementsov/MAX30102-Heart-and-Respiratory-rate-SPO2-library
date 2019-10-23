@@ -118,7 +118,7 @@ float StaticMedianFilter(float *array,int length)
 			if (array[currentIndex] < array[smallestIndex])
 				smallestIndex = currentIndex;
 		}
-        int temp = array[startIndex];
+        float temp = array[startIndex];
         array[startIndex]=array[smallestIndex];
         array[smallestIndex]=temp;
 	}
@@ -127,7 +127,7 @@ float StaticMedianFilter(float *array,int length)
 
 struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_orig,uint16_t length_mas){
 
-    float spo2_mas[10] = {};
+    float spo2_mas[20] = {};
     uint8_t error_mas[length_mas]={};
 
     int32_t Virmax = 0;
@@ -195,8 +195,8 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 error_mas[i]=error_mas[i-1];
         }
      }
-    float spo2 = StaticMedianFilter(spo2_mas,HR_counter);
-    struct result out{spo2,error_mas[0],HR_counter};//Error_mas пока не сделан
+
+    struct result out{StaticMedianFilter(spo2_mas,HR_counter),error_mas[0],HR_counter};//Error_mas пока не сделан
     return out;
 }
 
