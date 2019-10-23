@@ -157,7 +157,7 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 searching_max = false;
                 Vrmax=redmas_orig[elm.index];
                 max_index=elm.index;
-                //Serial.print("----------max_index=");Serial.print(elm.index);Serial.print("/ MAX =");Serial.println(Virmax);
+                Serial.print("----------max_index=");Serial.print(elm.index);Serial.print("/ MAX =");Serial.println(Virmax);
             }
         }
         else if ((irmas[i] > irmas[i-1])and(delta>=1)){
@@ -165,12 +165,11 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
             int32_t Virmin_new = elm.value;
             searching_max = true;
             int32_t Vrmin_new=redmas_orig[elm.index];
-            //Serial.print("----------min_index=");Serial.print(elm.index);Serial.print("/ MIN =");Serial.println(Virmin_new);
+            Serial.print("----------min_index=");Serial.print(elm.index);Serial.print("/ MIN =");Serial.println(Virmin_new);
             //SPO2
             if (Virmax!=0){
                 Flag_extremum=true;
                 float spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new,A,B);
-                //cout<<"SPO2= "<< spo2 <<endl;
                 Told=T;
                 struct errors error_res = CheckForErrors(left_index,max_index,elm.index,Told,spo2,Virmin,Virmax,Virmin_new);
                 error_mas[i]=error_res.error;
@@ -179,6 +178,7 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 if (error_res.error<=1){
                     spo2_mas[HR_counter] = spo2;
                     Serial.print("Heartbeat: ");Serial.println(HR_counter);
+                    HR_counter++;
                 }
             }
             left_index=elm.index;
