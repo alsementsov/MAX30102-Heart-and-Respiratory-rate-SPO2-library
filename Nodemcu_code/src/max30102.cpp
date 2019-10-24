@@ -53,12 +53,7 @@ bool maxim_max30102_init()
 }
 
 bool maxim_max30102_read_fifo(uint32_t *pun_red_led, uint32_t *pun_ir_led)
-//#endif
-/**
-* \brief        Read a set of samples from the MAX30102 FIFO register
-* \par          Details
-*               This function reads a set of samples from the MAX30102 FIFO register
-*/
+
 {
   uint32_t un_temp;
   uint8_t uch_temp;
@@ -94,15 +89,6 @@ bool maxim_max30102_read_fifo(uint32_t *pun_red_led, uint32_t *pun_ir_led)
 }
 
 bool maxim_max30102_reset()
-/**
-* \brief        Reset the MAX30102
-* \par          Details
-*               This function resets the MAX30102
-*
-* \param        None
-*
-* \retval       true on success
-*/
 {
     if(!maxim_max30102_write_reg(REG_MODE_CONFIG,0x40))
         return false;

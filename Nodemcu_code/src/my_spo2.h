@@ -3,6 +3,7 @@
 #define MEDIAN_FILTER_SIZE 81
 #define FSIZE_SLOW 9
 #define FSIZE_FAST 7
+#define BAD_CONTACT_TH 90000
 
 #define A 105
 #define B 16.5

@@ -23,6 +23,7 @@ bool flag_error;
 int j;
 int k;
 bool FastHR;
+bool BadContact;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -37,6 +38,8 @@ void setup() {
   j=0;
   k=0;
   FastHR=false;
+  BadContact=false;
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every ST seconds
@@ -49,7 +52,7 @@ void loop() {
   char hr_str[10];
   //buffer length of BUFFER_SIZE stores ST seconds of samples running at FS sps
   //read BUFFER_SIZE samples, and determine the signal range
-
+  BadContact = false;
   for(i=0;i<BUFFER_SIZE;i++)
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
@@ -66,6 +69,8 @@ void loop() {
       IR_temp[i-ISTOP]=ir_buffer[i];
       Red_temp[i-ISTOP]=red_buffer[i];
     }
+    if (ir_buffer[i] < BAD_CONTACT_TH)
+      BadContact=true;
     //Serial.print("[");Serial.print(i); Serial.print("]= ");
     //Serial.print(ir_buffer[i]);
     //Serial.print(" | ");
@@ -84,8 +89,9 @@ void loop() {
     FastHR=true;
   else
     FastHR=false;
+  if (BadContact==true)
+    Serial.println("Bad contact");
     
-  
 }
 
 
