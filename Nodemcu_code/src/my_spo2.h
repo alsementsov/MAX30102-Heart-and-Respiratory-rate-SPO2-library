@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #define STOPPER 0 /* Smaller than any datum */
 #define MEDIAN_FILTER_SIZE 81
-#define MF_SIZE9 9
+#define FSIZE_SLOW 9
+#define FSIZE_FAST 7
+
 #define A 105
 #define B 16.5
 #define true 1
@@ -21,7 +23,7 @@ struct errors{
     uint16_t T;};
 
 uint32_t Median_filter(uint32_t datum);
-int32_t Median_filter_9(int32_t datum);
+int32_t Median_filter_small(int32_t datum,bool FastHR);
 float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t Rminl,int32_t Rminr,float Ak,float Bk);
 struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16_t Told,float spo2,int32_t Vl,int32_t Vc,int32_t Vr);
 struct element Back_to_extremum (int32_t* ptrmas,bool up,int32_t* startmas);

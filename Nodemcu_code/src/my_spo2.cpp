@@ -182,7 +182,7 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 T = error_res.T;
                 if (error_res.error<=1){
                     spo2_mas[HR_counter] = spo2;
-                    Serial.print("~~~~ Heartbeat: ");Serial.print(HR_counter);Serial.print(" /  SpO2= ");Serial.println(spo2);
+                    //Serial.print("~~~~ Heartbeat: ");Serial.print(HR_counter);Serial.print(" /  SpO2= ");Serial.println(spo2);
                     HR_counter++;
                 }
             }
@@ -206,14 +206,14 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
     return out;
 }
 
-int32_t Median_filter_9(int32_t datum)
+int32_t Median_filter_small(int32_t datum,bool FastHR)
 {
   struct pair
   {
     struct pair   *point;                              /* Pointers forming list linked in sorted order */
     int32_t  value;                                   /* Values to sort */
   };
-  static struct pair buffer[MF_SIZE9] = {0}; /* Buffer of nwidth pairs */
+  static struct pair buffer[FSIZE_SLOW] = {0};        /* Buffer of nwidth pairs */
   static struct pair *datpoint = buffer;               /* Pointer into circular buffer of data */
   static struct pair small = {NULL, -5000};          /* Chain stopper */
   static struct pair big = {&small, 0};                /* Pointer to head (largest) of linked list.*/
@@ -226,7 +226,13 @@ int32_t Median_filter_9(int32_t datum)
   if (datum == -5000)  {
     datum = -5000 + 1;                            /* No stoppers allowed. */
   }
-  if ( (++datpoint - buffer) >= MF_SIZE9)  {
+  int MF_SIZE;
+  if (FastHR)
+    MF_SIZE = FSIZE_FAST;
+  else
+    MF_SIZE = FSIZE_SLOW;/* code */
+  
+  if ( (++datpoint - buffer) >= MF_SIZE)  {
     datpoint = buffer;                               /* Increment and wrap data in pointer.*/
   }
   datpoint->value = datum;                           /* Copy in new datum */
@@ -241,7 +247,7 @@ int32_t Median_filter_9(int32_t datum)
   scanold = scan;                                     /* Save this pointer and   */
   scan = scan->point ;                                /* step down chain */
   /* Loop through the chain, normal loop exit via break. */
-  for (i = 0 ; i < MF_SIZE9; ++i)  {
+  for (i = 0 ; i < MF_SIZE; ++i)  {
     /* Handle odd-numbered item in chain  */
     if (scan->point == datpoint)    {
       scan->point = successor;                    /* Chain out the old datum.*/

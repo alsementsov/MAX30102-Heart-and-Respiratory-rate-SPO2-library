@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-//#include "algorithm_by_RF.h"
 #include "max30102.h"
 #include "my_spo2.h"
 #define DELAY_SIZE 44//((MEDIAN_FILTER_SIZE-1)/2)+4
@@ -23,6 +22,7 @@ float spo2_old;
 bool flag_error;
 int j;
 int k;
+bool FastHR;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -36,6 +36,7 @@ void setup() {
   flag_error = false;
   j=0;
   k=0;
+  FastHR=false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every ST seconds
@@ -56,7 +57,7 @@ void loop() {
     j = (i==(MEDIAN_FILTER_SIZE-1)/2)?0:j+1;
     k = (i==4)?0:k+1;
     IR[i] =(int32_t)ir_buffer[j]-(int32_t)Median_filter(ir_buffer[i]);
-    IR_med[i]=Median_filter_9(IR[i]);
+    IR_med[i]=Median_filter_small(IR[i],FastHR);
     if (i<ISTOP){
       IR_read[i+DELAY_SIZE]=ir_buffer[i];
       Red_read[i+DELAY_SIZE]=red_buffer[i];
@@ -78,8 +79,12 @@ void loop() {
     IR_read[i]=IR_temp[i];
     Red_read[i]=Red_temp[i];
   }
-  //rf_heart_rate_and_oxygen_saturation(ir_buffer, BUFFER_SIZE, red_buffer, &n_spo2, &ch_spo2_valid, &n_heart_rate, &ch_hr_valid, &ratio, &correl); 
-
+  if (HR>90)
+    FastHR=true;
+  else
+    FastHR=false;
+    
+  
 }
 
 
