@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#include "algorithm_by_RF.h"
+//#include "algorithm_by_RF.h"
 #include "max30102.h"
 #include "my_spo2.h"
 #define DELAY_SIZE 44//((MEDIAN_FILTER_SIZE-1)/2)+4
