@@ -74,7 +74,9 @@ float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t
     float Red_AC = Rmax-Red_DC;
     float IR_DC=(IRminl+IRminr)/2;
     float IR_AC = IRmax-IR_DC;
-    float out = Ak-(Bk*((Red_AC/Red_DC)/(IR_AC/IR_DC)));
+    //float out = Ak-(Bk*((Red_AC/Red_DC)/(IR_AC/IR_DC)));
+    float out = (Red_AC/Red_DC)/(IR_AC/IR_DC);
+    out=(-45.060*out*out) + (30.354*out) + 94.845;
     return out;
   };
 /////// Errors //////////
