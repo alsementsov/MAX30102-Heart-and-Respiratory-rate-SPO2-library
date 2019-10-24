@@ -160,6 +160,8 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 searching_max = false;
                 Vrmax=redmas_orig[elm.index];
                 max_index=elm.index;
+                if (Virmin==0)
+                  HR_counter++;
                 //Serial.print("MAX index=");Serial.print(elm.index);Serial.print("/ IR_MAX =");Serial.print(Virmax);Serial.print("/ RED_MAX =");Serial.println(Vrmax);
             }
         }
