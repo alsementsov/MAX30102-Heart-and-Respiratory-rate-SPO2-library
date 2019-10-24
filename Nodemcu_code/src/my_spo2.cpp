@@ -92,7 +92,7 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
     }
     if ((Center<Left)or(Center>Right)or(Right<=Left+3))
         Errorval=2;
-    if ((spo2<80)or(spo2>=102)or(Vc<=Vl)or(Vc<=Vl)) //Восстановить после отладки до 91
+    if ((spo2<85)or(spo2>=102)or(Vc<=Vl)or(Vc<=Vl)) //Восстановить после отладки до 91
         Errorval=3;
     struct errors out{Errorval,T};
     return out;
@@ -193,9 +193,9 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
         }
         cnt_empty=cnt_empty+1;
         if ((Flag_extremum==false)and(T>0)){
-            if (((cnt_empty/T)>3)or(cnt_empty>62))//Завит от fps
+            if (((float(cnt_empty)/float(T))>3)or(cnt_empty>62))//Завит от fps
                error_mas[i]=4;
-            else
+            else if (error_mas[i-1]<4)
                 error_mas[i]=error_mas[i-1];
         }
         if (error_mas[i]>0){
