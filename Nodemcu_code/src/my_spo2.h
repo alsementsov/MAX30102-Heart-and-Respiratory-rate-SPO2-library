@@ -2,7 +2,7 @@
 #define STOPPER 0 /* Smaller than any datum */
 #define MEDIAN_FILTER_SIZE 81
 #define MF_SIZE9 9
-#define A 104.5
+#define A 105
 #define B 16.5
 #define true 1
 #define false 0

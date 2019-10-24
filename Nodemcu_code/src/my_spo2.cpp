@@ -173,8 +173,10 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
                 float spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new,A,B);
                 Told=T;
                 struct errors error_res = CheckForErrors(left_index,max_index,elm.index,Told,spo2,Virmin,Virmax,Virmin_new);
-                error_mas[i]=error_res.error;
-                Serial.print("ERROR = ");Serial.println(error_mas[i]);
+                if (HR_counter<2)
+                  error_mas[i]=0;
+                else
+                  error_mas[i]=error_res.error;
                 T = error_res.T;
                 if (error_res.error<=1){
                     spo2_mas[HR_counter] = spo2;
@@ -194,6 +196,8 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
             else
                 error_mas[i]=error_mas[i-1];
         }
+        if (error_mas[i]>0){
+          Serial.print("ERROR = ");Serial.println(error_mas[i]);}
      }
 
     struct result out{StaticMedianFilter(spo2_mas,HR_counter),error_mas[0],HR_counter};//Error_mas пока не сделан
