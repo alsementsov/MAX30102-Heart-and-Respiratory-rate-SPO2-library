@@ -18,8 +18,8 @@ def spo2_calc(IRmax,IRminl,IRminr,Rmax,Rminl,Rminr,A,B):
     IR_DC=(IRminl+IRminr)/2
     IR_AC = IRmax-IR_DC
     ratioAverage=(Red_AC/Red_DC)/(IR_AC/IR_DC)
-    return (A-(B*((Red_AC/Red_DC)/(IR_AC/IR_DC))))
-    #return (-45.060*ratioAverage* ratioAverage) + (30.354 *ratioAverage) + 94.845 
+    #return (A-(B*((Red_AC/Red_DC)/(IR_AC/IR_DC))))
+    return (-45.060*ratioAverage* ratioAverage) + (30.354 *ratioAverage) + 94.845 
 def CheckForErrors(Left,Center,Right,Told,spo2,Vl,Vc,Vr):
     T = Right-Left
     Error = 0

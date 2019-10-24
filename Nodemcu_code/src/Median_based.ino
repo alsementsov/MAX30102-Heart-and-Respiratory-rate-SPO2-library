@@ -73,13 +73,14 @@ void loop() {
   }
   struct result res = MaxMin_search(IR_med,IR_read,Red_read,BUFFER_SIZE);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
-  Serial.print("######################################## Npulses=");Serial.print(res.HR);Serial.print(" / HR=");Serial.print(HR);
+
+  Serial.println();Serial.print("@ HR=");Serial.print(HR);
   Serial.print(" / SpO2=");Serial.println(res.spo2);
   for (int i=0;i<DELAY_SIZE;i++){
     IR_read[i]=IR_temp[i];
     Red_read[i]=Red_temp[i];
   }
-  if (HR>90)
+  if (HR>95)
     FastHR=true;
   else
     FastHR=false;

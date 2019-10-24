@@ -195,13 +195,15 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
         }
         cnt_empty=cnt_empty+1;
         if ((Flag_extremum==false)and(T>0)){
-            if (((float(cnt_empty)/float(T))>3)or(cnt_empty>62))//Завит от fps
+            if (cnt_empty>62){//Завит от fps
+               //Serial.print("i=");Serial.print(i);Serial.print("/T=");Serial.println(T);
                error_mas[i]=4;
+            }
             else if (error_mas[i-1]<4)
                 error_mas[i]=error_mas[i-1];
         }
         if (error_mas[i]>0){
-          Serial.print("ERROR = ");Serial.println(error_mas[i]);}
+          Serial.print("; ERROR[");Serial.print(i); Serial.print("]= ");Serial.print(error_mas[i]);}
      }
 
     struct result out{StaticMedianFilter(spo2_mas,HR_counter),error_mas[0],HR_counter};//Error_mas пока не сделан

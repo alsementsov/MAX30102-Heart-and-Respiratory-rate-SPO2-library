@@ -1,18 +1,7 @@
-
 #include "max30102.h"
 #include <Wire.h>
 
 bool maxim_max30102_write_reg(uint8_t uch_addr, uint8_t uch_data)
-/**
-* \brief        Write a value to a MAX30102 register
-* \par          Details
-*               This function writes a value to a MAX30102 register
-*
-* \param[in]    uch_addr    - register address
-* \param[in]    uch_data    - register data
-*
-* \retval       true on success
-*/
 {
   Wire.beginTransmission(I2C_WRITE_ADDR);
   Wire.write(uch_addr);
@@ -22,16 +11,6 @@ bool maxim_max30102_write_reg(uint8_t uch_addr, uint8_t uch_data)
 }
 
 bool maxim_max30102_read_reg(uint8_t uch_addr, uint8_t *puch_data)
-/**
-* \brief        Read a MAX30102 register
-* \par          Details
-*               This function reads a MAX30102 register
-*
-* \param[in]    uch_addr    - register address
-* \param[out]   puch_data    - pointer that stores the register data
-*
-* \retval       true on success
-*/
 {
   Wire.beginTransmission(I2C_WRITE_ADDR);
   Wire.write(uch_addr);
@@ -73,19 +52,12 @@ bool maxim_max30102_init()
   return true;  
 }
 
-
-
 bool maxim_max30102_read_fifo(uint32_t *pun_red_led, uint32_t *pun_ir_led)
 //#endif
 /**
 * \brief        Read a set of samples from the MAX30102 FIFO register
 * \par          Details
 *               This function reads a set of samples from the MAX30102 FIFO register
-*
-* \param[out]   *pun_red_led   - pointer that stores the red LED reading data
-* \param[out]   *pun_ir_led    - pointer that stores the IR LED reading data
-*
-* \retval       true on success
 */
 {
   uint32_t un_temp;
