@@ -9,7 +9,7 @@ from tkinter.filedialog import askopenfilename
 FPS = 25
 A = 104.5
 B = 16.5
-Lf = 9
+Lf = 7
 Lf_spo2=13
 ############ Functions
 def spo2_calc(IRmax,IRminl,IRminr,Rmax,Rminl,Rminr,A,B):
