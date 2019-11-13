@@ -18,26 +18,25 @@ def KalmanFilter(mas):
     # intial parameters
     sz = size(mas) #50
     # allocate space for arrays
-    xhat=np.zeros(sz)      # a posteri estimate of x
+    x=np.zeros(sz)      # a posteri estimate of x
     P=np.zeros(sz)         # a posteri error estimate
     xhatminus=np.zeros(sz) # a priori estimate of x
     Pminus=np.zeros(sz)    # a priori error estimate
     K=np.zeros(sz)         # gain or blending factor
        
     # intial guesses
-    xhat[0] = mas[0]
+    x[0] = mas[0]
     P[0] = 1.0
     
     for k in range(1,sz):
         # time update
-        xhatminus[k] = xhat[k-1]
+        xhatminus[k] = x[k-1]
         Pminus[k] = P[k-1]+Q
-    
         # measurement update
         K[k] = Pminus[k]/( Pminus[k]+R )
-        xhat[k] = xhatminus[k]+K[k]*(mas[k]-xhatminus[k])
+        x[k] = xhatminus[k]+K[k]*(mas[k]-xhatminus[k])
         P[k] = (1-K[k])*Pminus[k]
-    return xhat
+    return x
 def spo2_calc(IRmax,IRminl,IRminr,Rmax,Rminl,Rminr,A,B):
     Red_DC=(Rminl+Rminr)/2
     Red_AC = Rmax-Red_DC

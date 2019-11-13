@@ -285,12 +285,14 @@ int32_t Median_filter_small(int32_t datum,bool FastHR)
   }
   return median->value;
 }
-float Kalman_simple_filter(float val) {
+float Kalman_simple_filter(uint32_t val) {
  static float Xe = 0;
  static float Xp;
  static float P = 1;
  static float Pc;
  static float K;
+ const float Q = 0.00002;
+ const float R = 0.01;
 
 if ((Xe==0)&&(P==1)){
   Xe=val;
@@ -299,6 +301,6 @@ if ((Xe==0)&&(P==1)){
  Pc = P + Q;
  K = Pc/(Pc + R);
  P = (1-K)*Pc;
- Xe = K*(val+Xp)+Xp; 
+ Xe = K*(val-Xp)+Xp; 
  return Xe;
 }

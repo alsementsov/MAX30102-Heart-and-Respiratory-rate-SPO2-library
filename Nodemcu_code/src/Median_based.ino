@@ -24,6 +24,7 @@ int j;
 int k;
 bool FastHR;
 bool BadContact;
+int32_t temp_kfdata;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -57,10 +58,10 @@ void loop() {
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
-    
-    j = (i==(MEDIAN_FILTER_SIZE-1)/2)?0:j+1;
-    k = (i==4)?0:k+1;
-    IR[i] =(int32_t)ir_buffer[j]-(int32_t)Median_filter(ir_buffer[i]);
+    temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i]); 
+    Serial.print(temp_kfdata);
+    //j = (i==(MEDIAN_FILTER_SIZE-1)/2)?0:j+1;
+    IR[i] =(int32_t)ir_buffer[i]-temp_kfdata;
     IR_med[i]=Median_filter_small(IR[i],FastHR);
     if (i<ISTOP){
       IR_read[i+DELAY_SIZE]=ir_buffer[i];
@@ -73,9 +74,9 @@ void loop() {
     if (ir_buffer[i] < BAD_CONTACT_TH)
       BadContact=true;
     //Serial.print("[");Serial.print(i); Serial.print("]= ");
-    //Serial.print(ir_buffer[i]);
-    //Serial.print(" | ");
     //Serial.println(red_buffer[i]);
+    Serial.print(" ");
+    Serial.println(ir_buffer[i]);
   }
   struct result res = MaxMin_search(IR_med,IR_read,Red_read,BUFFER_SIZE);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
