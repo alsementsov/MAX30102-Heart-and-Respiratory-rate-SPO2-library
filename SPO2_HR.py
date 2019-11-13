@@ -9,22 +9,21 @@ from tkinter.filedialog import askopenfilename
 FPS = 25
 A = 104.5
 B = 16.5
-Lf = 7
-Lf_spo2=13
+Size_Lf = 7
+Size_Lf_spo2=13
+Q = 0.00002 #SKF process variance   -5 
+R = 0.1**2  # SKF estimate of measurement variance, change to see effect
 ############ Functions
 def KalmanFilter(mas):
     # intial parameters
     sz = size(mas) #50
-    Q = 1e-5 # process variance    
     # allocate space for arrays
     xhat=np.zeros(sz)      # a posteri estimate of x
     P=np.zeros(sz)         # a posteri error estimate
     xhatminus=np.zeros(sz) # a priori estimate of x
     Pminus=np.zeros(sz)    # a priori error estimate
     K=np.zeros(sz)         # gain or blending factor
-    
-    R = 0.05**2 # estimate of measurement variance, change to see effect
-    
+       
     # intial guesses
     xhat[0] = mas[0]
     P[0] = 1.0
@@ -100,10 +99,10 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
     HR_counter=0
     for sample in irmas[1:]:
         Flag_extremum=False
-        delta=abs(abs(sample)-abs(sample_prev))
-        if searching_max:#Max       
-            if (sample < sample_prev)and(delta>=5):
-                #if abs(abs(last_extremum)-abs(sample))>12:
+        delta=abs(sample-sample_prev)
+        if searching_max:#Max   
+            if (int(sample) < int(sample_prev))and(delta>=5):
+                #if abs(abs(last_extremum)-abs(sample))>12:                  
                 Virmax,i = back_to_extremum(irmas_orig,cnt,"up") 
                 irmax.append(Virmax)
                 irmax_index.append(i)
@@ -138,6 +137,9 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
             Virmin=Virmin_new
             Vrmin=Vrmin_new
             cnt_empty=0
+        # if (cnt>400)and(cnt<415):
+        #     print(cnt)
+        #     print(Virmax,i,searching_max,max_index)
         sample_prev = sample
         cnt=cnt+1
         cnt_empty=cnt_empty+1
@@ -165,76 +167,47 @@ records = genfromtxt(Filename_request(), delimiter=',')
 Red_read = np.array(records[2:,0],dtype=int)
 IR_read = np.array(records[2:,1],dtype=int)
 #Big MEDIAN = To improve performance (may be excluded)
-IR_mean = KalmanFilter(IR_read)
-#IR_mean = sig.medfilt(IR_read,81)
-IR = IR_read - IR_mean # without DC
+#IR_med= sig.medfilt(IR_read,5)
+IR_kalman = KalmanFilter(IR_read)
+IR = IR_read - IR_kalman # without DC
 # Small MEDIAN
-IR_med = sig.medfilt(IR,Lf)
+IR_med = sig.medfilt(IR,7)
+
+# # FAST but it has problems with pre-stages
+# IR_med = sig.medfilt(IR_read,Size_Lf)
+# IR_kalman = KalmanFilter(IR_med)
 irmax,irmin,irmax_i,irmin_i,rmax,rmin,rmax_i,rmin_i,irmax_med,irmin_med,irmax_med_i,irmin_med_i,spo2,errors,HR_raw= MaxMin_search(IR_med,IR_read,Red_read)  
 
 #### Heart rate & SpO2
-spo2_med = sig.medfilt(spo2,Lf_spo2)  # сглаживание spo2
+spo2_med = sig.medfilt(spo2,Size_Lf_spo2)  # сглаживание spo2
 Nsamples=len(Red_read)
 T_in_minute = Nsamples/(60*FPS)
 #HR_raw = len(irmax)
 HR = int(HR_raw/T_in_minute);
 
-
 #############################PLOT################################################
-# plt.subplot(321)
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(Red_read)
-# plt.plot(rmax_i,rmax,'o')
-# plt.plot(rmin_i,rmin,'o')
-# plt.title("RED")
-# plt.subplot(323)
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(errors,color='purple',linewidth ='3')
 
-# plt.subplot(322)
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(IR_read)
-# plt.plot(irmax_i,irmax,'o')
-# plt.plot(irmin_i,irmin,'o')
-# plt.title("№ pulses = "+str(len(irmax))+"("+str(int(len(irmax)/T_in_minute))+") /  HR= "+str(HR))
-# plt.subplot(324)
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(IR_med)
-# plt.plot(irmax_med_i,irmax_med,'o')
-# plt.plot(irmin_med_i,irmin_med,'o')
-
-# plt.subplot(325)
-# plt.ylim((90, 104))
-# pylab.yticks(range(80, 104,2)) 
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(spo2,color='red',linewidth ='2')
-# plt.subplot(326)
-# plt.title(" === SpO2 ===")
-# plt.ylim((90, 104))
-# pylab.yticks(range(90, 104,1))
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(spo2_med,color='red',linewidth ='2')
 ###############################################
 plt.subplot(221)
 plt.grid(axis='both',linestyle = '--')
-plt.plot(Red_read)
-plt.plot(rmax_i,rmax,'o')
-plt.plot(rmin_i,rmin,'o')
-plt.title("RED")
-plt.subplot(223)
-#plt.ylim((0, 4))
-plt.grid(axis='both',linestyle = '--')
-plt.plot(IR_med,color='purple',linewidth ='2')#errors
-plt.title("Errors")
-
+plt.plot(IR_read)
+plt.plot(irmax_i,irmax,'o')
+plt.plot(irmin_i,irmin,'o')
+plt.plot(IR_kalman,color='purple',linewidth ='2')#errors
+plt.title("IR & mean")
 
 plt.subplot(222)
 plt.grid(axis='both',linestyle = '--')
-plt.plot(IR_read)
-plt.plot(IR_mean,color='purple',linewidth ='3')
-plt.plot(irmax_i,irmax,'o')
-plt.plot(irmin_i,irmin,'o')
+plt.plot(Red_read,color='purple',linewidth ='2')
+plt.plot(rmax_i,rmax,'o')
+plt.plot(rmin_i,rmin,'o')
+plt.title("RED")
+
+plt.subplot(223)
+plt.grid(axis='both',linestyle = '--')
+plt.plot(errors,color='purple',linewidth ='3')
 plt.title("IR pulses = "+str(len(irmax))+"("+str(int(len(irmax)/T_in_minute))+") /  HR= "+str(HR))
+plt.ylim((0, 4.5))
 
 plt.subplot(224)
 plt.title(" === SpO2 ===")
