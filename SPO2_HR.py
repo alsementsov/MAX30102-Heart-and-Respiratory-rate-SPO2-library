@@ -37,7 +37,6 @@ def KalmanFilter(mas):
         K[k] = Pminus[k]/( Pminus[k]+R )
         xhat[k] = xhatminus[k]+K[k]*(mas[k]-xhatminus[k])
         P[k] = (1-K[k])*Pminus[k]
-
     return xhat
 def spo2_calc(IRmax,IRminl,IRminr,Rmax,Rminl,Rminr,A,B):
     Red_DC=(Rminl+Rminr)/2
@@ -101,7 +100,7 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
         Flag_extremum=False
         delta=abs(sample-sample_prev)
         if searching_max:#Max   
-            if (int(sample) < int(sample_prev))and(delta>=5):
+            if (sample< sample_prev)and(delta>=5):
                 #if abs(abs(last_extremum)-abs(sample))>12:                  
                 Virmax,i = back_to_extremum(irmas_orig,cnt,"up") 
                 irmax.append(Virmax)
