@@ -3,8 +3,6 @@
 #include <SPI.h>
 #include "max30102.h"
 #include "my_spo2.h"
-#define DELAY_SIZE 44//((MEDIAN_FILTER_SIZE-1)/2)+4
-#define ISTOP (BUFFER_SIZE-DELAY_SIZE)
 
 const byte oxiInt = 4; // pin connected to MAX30102 INT
 uint32_t ir_buffer[BUFFER_SIZE]; //infrared LED sensor data
@@ -25,6 +23,7 @@ int k;
 bool FastHR;
 bool BadContact;
 int32_t temp_kfdata;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -59,30 +58,22 @@ void loop() {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
     temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i]); 
-    Serial.print(temp_kfdata);
+    //Serial.print(temp_kfdata);
     //j = (i==(MEDIAN_FILTER_SIZE-1)/2)?0:j+1;
-    IR[i] =(int32_t)ir_buffer[i]-temp_kfdata;
-    IR_med[i]=Median_filter_small(IR[i],FastHR);
-    if (i<ISTOP){
-      IR_read[i+DELAY_SIZE]=ir_buffer[i];
-      Red_read[i+DELAY_SIZE]=red_buffer[i];
-    }
-    else{
-      IR_temp[i-ISTOP]=ir_buffer[i];
-      Red_temp[i-ISTOP]=red_buffer[i];
-    }
+    temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
+    IR_med[i]=Median_filter_small(temp_kfdata,FastHR);
+
     if (ir_buffer[i] < BAD_CONTACT_TH)
       BadContact=true;
-    //Serial.print("[");Serial.print(i); Serial.print("]= ");
-    //Serial.println(red_buffer[i]);
-    Serial.print(" ");
-    Serial.println(ir_buffer[i]);
+    //Serial.print(temp_kfdata);
+    //Serial.print(" ");
+    //Serial.println(IR_med[i]);
   }
   struct result res = MaxMin_search(IR_med,IR_read,Red_read,BUFFER_SIZE);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
 
-  //Serial.println();Serial.print("@ HR=");Serial.print(HR);
-  //Serial.print(" / SpO2=");Serial.println(res.spo2);
+  Serial.println();Serial.print("@ HR=");Serial.print(HR);
+  Serial.print(" / SpO2=");Serial.println(res.spo2);
   for (int i=0;i<DELAY_SIZE;i++){
     IR_read[i]=IR_temp[i];
     Red_read[i]=Red_temp[i];
@@ -91,8 +82,8 @@ void loop() {
     FastHR=true;
   else
     FastHR=false;
-  //if (BadContact==true)
-    //Serial.println("Bad contact");
+  if (BadContact==true)
+    Serial.println("Bad contact");
   //Serial.print(red_buffer[i]);
   //Serial.print("  ");
   //Serial.println(ir_buffer[i]);

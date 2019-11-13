@@ -100,7 +100,7 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
 struct element Back_to_extremum (int32_t* ptrmas,bool up,int32_t* startmas)
 {
       int32_t* ptr;
-      ptr = ptrmas;
+      ptr = ptrmas;//-DELAY_SIZE;
       while (((*(ptr-1) >= *ptr)and(up==true))or((*(ptr-1) <= *ptr)and(up==false)))
       {
         ptr=ptr-1;
@@ -152,7 +152,7 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
         //Serial.print("[");Serial.print(i);Serial.print("]=");Serial.println(irmas[i]);
         Flag_extremum=false;
         error_mas[i]=0;
-        int32_t delta=abs(abs(irmas[i])-abs(irmas[i-1]));
+        int32_t delta=abs(irmas[i]-irmas[i-1]);
         if (searching_max){
             if ((irmas[i] < irmas[i-1])and(delta>=5)){//Восстановить после отладки в 5
                 elm = Back_to_extremum(&irmas_orig[i],true,irmas_orig);

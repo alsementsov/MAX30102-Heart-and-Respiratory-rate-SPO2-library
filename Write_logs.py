@@ -17,10 +17,8 @@ def plot_records(lrows):
     Red = np.array(records[2:,0],dtype=int)
     IR = np.array(records[2:,1],dtype=int)
     plt.grid(axis='both',linestyle = '--')
-    plt.subplot(121)
     plt.plot(Red)
-    plt.subplot(122)
-    plt.plot(IR)
+    plt.plot(IR,color='red')
     #if (Save_to_file==1):
         #plt.savefig(Filename+'.png',quality =95,dpi=300)
     plt.show()
@@ -44,7 +42,7 @@ try :
             s = s[2:]
             lenght = len(s) - 5;
             s= s[:lenght]
-            row_wr = s.split('\\t')
+            row_wr = s.split(' ')
             print(row_wr)
             if (len(row_wr)>1):
                 list_of_rows.append(row_wr)
