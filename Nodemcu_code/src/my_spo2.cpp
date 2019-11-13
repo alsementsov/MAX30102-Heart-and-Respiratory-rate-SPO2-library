@@ -202,8 +202,8 @@ struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_o
             else if (error_mas[i-1]<4)
                 error_mas[i]=error_mas[i-1];
         }
-        if (error_mas[i]>0){
-          Serial.print("; ERROR[");Serial.print(i); Serial.print("]= ");Serial.print(error_mas[i]);}
+        if (error_mas[i]>0){}
+          //Serial.print("; ERROR[");Serial.print(i); Serial.print("]= ");Serial.print(error_mas[i]);} // TURN ON after test kalman 
      }
 
     struct result out{StaticMedianFilter(spo2_mas,HR_counter),error_mas[0],HR_counter};//Error_mas пока не сделан
@@ -304,3 +304,4 @@ if ((Xe==0)&&(P==1)){
  Xe = K*(val-Xp)+Xp; 
  return Xe;
 }
+

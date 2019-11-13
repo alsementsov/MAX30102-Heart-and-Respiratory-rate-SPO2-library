@@ -81,8 +81,8 @@ void loop() {
   struct result res = MaxMin_search(IR_med,IR_read,Red_read,BUFFER_SIZE);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
 
-  Serial.println();Serial.print("@ HR=");Serial.print(HR);
-  Serial.print(" / SpO2=");Serial.println(res.spo2);
+  //Serial.println();Serial.print("@ HR=");Serial.print(HR);
+  //Serial.print(" / SpO2=");Serial.println(res.spo2);
   for (int i=0;i<DELAY_SIZE;i++){
     IR_read[i]=IR_temp[i];
     Red_read[i]=Red_temp[i];
@@ -91,10 +91,10 @@ void loop() {
     FastHR=true;
   else
     FastHR=false;
-  if (BadContact==true)
-    Serial.println("Bad contact");
-  Serial.print(red_buffer[i]);
-  Serial.print("  ");
-  Serial.println(ir_buffer[i]);
+  //if (BadContact==true)
+    //Serial.println("Bad contact");
+  //Serial.print(red_buffer[i]);
+  //Serial.print("  ");
+  //Serial.println(ir_buffer[i]);
 }
 
