@@ -11,6 +11,10 @@
 #define false 0
 #define FS 25  //sampling frequency (samples/second) -> Don't change!
 #define BUFFER_SIZE  (FS* 10) 
+
+//Kalman coefficient
+#define Q 0.00002
+#define R 0.01
 // N of samples, FS*T, T - duration of continuous buffering data packet in seconds
 struct result{
     float spo2;
@@ -30,6 +34,7 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
 struct element Back_to_extremum (int32_t* ptrmas,bool up,int32_t* startmas);
 float StaticMedianFilter(float *array,int length);
 struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_orig,uint16_t length_mas);
+float Kalman_simple_filter(float val);
 
 /*uch_spo2_table is approximated as  -45.060*ratioAverage* ratioAverage + 30.354 *ratioAverage + 94.845 ;
 const float uch_spo2_table[184]=

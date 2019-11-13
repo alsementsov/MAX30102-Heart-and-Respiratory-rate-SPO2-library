@@ -57,7 +57,7 @@ void loop() {
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
-    /*
+    
     j = (i==(MEDIAN_FILTER_SIZE-1)/2)?0:j+1;
     k = (i==4)?0:k+1;
     IR[i] =(int32_t)ir_buffer[j]-(int32_t)Median_filter(ir_buffer[i]);
@@ -92,11 +92,8 @@ void loop() {
     FastHR=false;
   if (BadContact==true)
     Serial.println("Bad contact");
-    */
   Serial.print(red_buffer[i]);
   Serial.print("  ");
   Serial.println(ir_buffer[i]);
 }
-}
-
 
