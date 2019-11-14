@@ -8,8 +8,6 @@ const byte oxiInt = 4; // pin connected to MAX30102 INT
 uint32_t ir_buffer[BUFFER_SIZE]; //infrared LED sensor data
 uint32_t red_buffer[BUFFER_SIZE];  //red LED sensor data
 int32_t IR_med [BUFFER_SIZE];  
-
-
 float spo2;
 float spo2_old;
 bool flag_error;
@@ -18,7 +16,9 @@ int k;
 bool FastHR;
 bool BadContact;
 int32_t temp_kfdata;
-
+int32_t IR_norm;
+struct result res;
+int HR;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -41,8 +41,7 @@ void setup() {
 void loop() {
   int32_t i;
 
-  BadContact = false;
-  //------------ Reading Sensor ---------------------
+   //------------ Reading Sensor ---------------------
   for(i=0;i<BUFFER_SIZE;i++)
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
@@ -50,27 +49,26 @@ void loop() {
     temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i]); 
     //Serial.print(temp_kfdata);
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
-    IR_med[i]=Median_filter_small(temp_kfdata,FastHR);
+    IR_norm=Median_filter_small(temp_kfdata,FastHR);
 
     if (ir_buffer[i] < BAD_CONTACT_TH)
-      BadContact=true;
+      Serial.println("Bad contact");
     //Serial.print(temp_kfdata);
     //Serial.print(" ");
     //Serial.println(IR_med[i]);
+    res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
+    if (res.NewBeat){
+      HR = res.HR;//(res.HR*60*FS)/BUFFER_SIZE;
+      Serial.println();Serial.print("@ HR=");Serial.print(HR);
+      Serial.print(" / SpO2=");Serial.println(res.spo2);
+    }
+    //------------ Calculation ---------------------
   }
-  //------------ Calculation ---------------------
-  struct result res = MaxMin_search(IR_med,ir_buffer,red_buffer,BUFFER_SIZE);
-  int HR = (res.HR*60*FS)/BUFFER_SIZE;
-
-  Serial.println();Serial.print("@ HR=");Serial.print(HR);
-  Serial.print(" / SpO2=");Serial.println(res.spo2);
-
   if (HR>95)
     FastHR=true;
   else
     FastHR=false;
-  if (BadContact==true)
-    Serial.println("Bad contact");
+
   //Serial.print(red_buffer[i]);
   //Serial.print("  ");
   //Serial.println(ir_buffer[i]);

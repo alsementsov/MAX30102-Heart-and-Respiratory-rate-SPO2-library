@@ -80,34 +80,22 @@ float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t
     return out;
   };
 /////// Errors //////////
-struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16_t Told,float spo2,int32_t Vl,int32_t Vc,int32_t Vr)
+uint8_t CheckForErrors(uint16_t T,uint16_t Tmax,float spo2,int32_t Vl,int32_t Vc,int32_t Vr)
 {
-    uint16_t T = Right-Left;
-    uint8_t Errorval = 0;
+    static uint16_t Told=0;
+    uint8_t Error;
+    Error = 0;
     if (Told!=0){
         float div=float(T)/float(Told);
         //Serial.print(T);Serial.print("/");Serial.print(Told);Serial.print("/");Serial.println(div);
         if ((div > 2.5) or (div < 0.4))
-            Errorval=1;
+            Error=1;
     }
-    if ((Center<Left)or(Center>Right)or(Right<=Left+3))
-        Errorval=2;
-    if ((spo2<85)or(spo2>=102)or(Vc<=Vl)or(Vc<=Vl)) //Восстановить после отладки до 91
-        Errorval=3;
-    struct errors out{Errorval,T};
-    return out;
-};
-struct element Back_to_extremum (uint32_t* ptrmas,bool up,uint32_t* startmas)
-{
-      uint32_t* ptr;
-      ptr = ptrmas-DELAY_SIZE;
-      while (((*(ptr-1) >= *ptr)and(up==true))or((*(ptr-1) <= *ptr)and(up==false)))
-      {
-        ptr=ptr-1;
-        if (ptr==startmas){break;}
-      }
-      struct element out {*ptr,uint16_t(ptr-startmas)};
-      return out;
+    if (T<=3)
+        Error=2;
+    if ((spo2<88)or(spo2>=101)or(Vc<=Vl)or(Vc<=Vr)) //Восстановить после отладки до 91
+        Error=3;
+    return Error;
 };
 
 float StaticMedianFilter(float *array,int length)
@@ -125,89 +113,6 @@ float StaticMedianFilter(float *array,int length)
         array[smallestIndex]=temp;
 	}
 	return float(array[length/2]+array[(length/2)-1])/2;
-}
-
-struct result MaxMin_search(int32_t *irmas,uint32_t *irmas_orig,uint32_t *redmas_orig,uint16_t length_mas){
-
-    float spo2_mas[25] = {};
-    uint8_t error_mas[length_mas]={};
-
-    int32_t Virmax = 0;
-    int32_t Virmin=0;
-    int32_t Vrmax=0;
-    int32_t Vrmin=0;
-    uint16_t left_index=0;
-    uint16_t max_index=0;
-    uint16_t T=0;
-    uint16_t cnt_empty=0;
-    uint16_t HR_counter=0;
-    bool searching_max = true;
-    if (irmas[0]>irmas[1])
-       searching_max=false;
-    bool Flag_extremum = false;
-    struct element elm;
-    uint16_t Told =0;
-    //
-    for (int i=1;i<length_mas;i++){
-        //Serial.print("[");Serial.print(i);Serial.print("]=");Serial.println(irmas[i]);
-        Flag_extremum=false;
-        error_mas[i]=0;
-        int32_t delta=abs(irmas[i]-irmas[i-1]);
-        if (searching_max){
-            if ((irmas[i] < irmas[i-1])and(delta>=5)){//Восстановить после отладки в 5
-                elm = Back_to_extremum(&irmas_orig[i],true,irmas_orig);
-                Virmax = elm.value;
-                searching_max = false;
-                Vrmax=redmas_orig[elm.index];
-                max_index=elm.index;
-                if (Virmin==0)
-                  HR_counter++;
-                //Serial.print("MAX index=");Serial.print(elm.index);Serial.print("/ IR_MAX =");Serial.print(Virmax);Serial.print("/ RED_MAX =");Serial.println(Vrmax);
-            }
-        }
-        else if ((irmas[i] > irmas[i-1])and(delta>=1)){
-            elm = Back_to_extremum(&irmas_orig[i],false,irmas_orig);
-            int32_t Virmin_new = elm.value;
-            searching_max = true;
-            int32_t Vrmin_new=redmas_orig[elm.index];
-            //Serial.print("MIN index=");Serial.print(elm.index);Serial.print("/ IR_MIN =");Serial.print(Virmin_new);Serial.print("/ RED_MIN =");Serial.println(Vrmin_new);
-            //SPO2
-            if (Virmax!=0){
-                Flag_extremum=true;
-                float spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new,A,B);
-                Told=T;
-                struct errors error_res = CheckForErrors(left_index,max_index,elm.index,Told,spo2,Virmin,Virmax,Virmin_new);
-                if (HR_counter<2)
-                  error_mas[i]=0;
-                else
-                  error_mas[i]=error_res.error;
-                T = error_res.T;
-                if (error_res.error<=1){
-                    spo2_mas[HR_counter] = spo2;
-                    //Serial.print("~~~~ Heartbeat: ");Serial.print(HR_counter);Serial.print(" /  SpO2= ");Serial.println(spo2);
-                    HR_counter++;
-                }
-            }
-            left_index=elm.index;
-            Virmin=Virmin_new;
-            Vrmin=Vrmin_new;
-            cnt_empty=0;
-        }
-        cnt_empty=cnt_empty+1;
-        if ((Flag_extremum==false)and(T>0)){
-            if (cnt_empty>62){//Завит от fps
-               //Serial.print("i=");Serial.print(i);Serial.print("/T=");Serial.println(T);
-               error_mas[i]=4;
-            }
-            else if (error_mas[i-1]<4)
-                error_mas[i]=error_mas[i-1];
-        }
-        if (error_mas[i]>0){
-          Serial.print("; ERROR[");Serial.print(i); Serial.print("]= ");Serial.print(error_mas[i]);} // TURN ON after test kalman 
-     }
-
-    struct result out{StaticMedianFilter(spo2_mas,HR_counter),error_mas[0],HR_counter};//Error_mas пока не сделан
-    return out;
 }
 
 int32_t Median_filter_small(int32_t datum,bool FastHR)
@@ -285,7 +190,8 @@ int32_t Median_filter_small(int32_t datum,bool FastHR)
   }
   return median->value;
 }
-float Kalman_simple_filter(uint32_t val) {
+float Kalman_simple_filter(uint32_t val)
+{
  static float Xe = 0;
  static float Xp;
  static float P = 1;
@@ -305,3 +211,72 @@ if ((Xe==0)&&(P==1)){
  return Xe;
 }
 
+struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED){
+
+    static bool searching_max = true;
+    static int32_t Virmax = 0;
+    static int32_t Virmin=0;
+    static int32_t Vrmax=0;
+    static int32_t Vrmin=0;
+    static uint16_t Min_cnt=0;
+    static uint16_t Max_cnt=0;
+    static uint32_t HR_counter=0;
+    static int32_t IRnorm_prev=0;
+    static uint32_t Virmin_new=0;
+    static uint32_t Vrmin_new=0;
+    
+    static uint8_t error;
+    //struct element elm;
+    bool NewBeat;
+    float spo2=0;
+    
+    //Serial.print("[");Serial.print(i);Serial.print("]=");Serial.println(irmas[i]);
+    NewBeat=false;
+  
+    // -------- Поиск максимумов и минимумов в сырых данных -----------------
+    if (IR>=Virmax){
+      Virmax=IR;
+      Virmin_new=IR;}
+    else if (IR<=Virmin_new){
+      Virmin_new=IR; }
+    if (RED>=Vrmax){
+      Vrmax=RED;
+      Vrmin_new=RED;}
+    else if (RED<=Vrmin_new){
+      Vrmin_new=RED; }
+    // -----Поиск экстремумов в потоке и расчет HR и SPO2 на каждом найденном минимуме
+    int32_t delta=abs(IRnorm-IRnorm_prev);
+    if (searching_max){
+        if ((IRnorm < IRnorm_prev)and(delta>=2)){ // Maximum
+            searching_max = false;
+            Max_cnt=0;}
+    }
+    else if ((IRnorm > IRnorm_prev)and(delta>=2)){// Minimum
+        //elm = Back_to_extremum(&irmas_orig[i],false,irmas_orig);
+        searching_max = true;
+        //SPO2
+        NewBeat=true;
+        spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new,A,B);
+        error = CheckForErrors(Min_cnt,Max_cnt,spo2,Virmin,Virmax,Virmin_new);
+        if (error<=1){
+            HR_counter++;
+        }
+        if (error>0)
+          Serial.print(" | Error=");Serial.print(error);
+        Min_cnt=0;
+        Max_cnt=0;
+        Virmin=Virmin_new;
+        Vrmin=Vrmin_new;
+        Virmax=Virmin_new;
+        Vrmax=Vrmin_new;
+    }
+    if ((Min_cnt>62)||(Max_cnt>31)){//Завит от fps
+      error=4;
+      Serial.print(" | Error=4");
+    }
+    IRnorm_prev=IRnorm;
+    Max_cnt++;
+    Min_cnt++;
+    struct result out{spo2,error,HR_counter,NewBeat};
+    return out;
+}
