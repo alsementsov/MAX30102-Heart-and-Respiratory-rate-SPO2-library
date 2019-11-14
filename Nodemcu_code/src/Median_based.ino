@@ -9,16 +9,14 @@ uint32_t ir_buffer[BUFFER_SIZE]; //infrared LED sensor data
 uint32_t red_buffer[BUFFER_SIZE];  //red LED sensor data
 int32_t IR_med [BUFFER_SIZE];  
 float spo2;
-float spo2_old;
-bool flag_error;
-int j;
-int k;
-bool FastHR;
 bool BadContact;
 int32_t temp_kfdata;
 int32_t IR_norm;
 struct result res;
-int HR;
+uint32_t Nsample;
+uint32_t Nbeats[HR_FIFOSIZE];
+uint32_t* ptr = Nbeats;
+uint32_t HR;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -28,28 +26,22 @@ void setup() {
   maxim_max30102_reset(); //resets the MAX30102
   delay(1000);
   maxim_max30102_init();  //initialize the MAX30102
-  //Serial.println("START");
-  flag_error = false;
-  j=0;
-  k=0;
-  FastHR=false;
   BadContact=false;
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every ST seconds
 void loop() {
   int32_t i;
-
    //------------ Reading Sensor ---------------------
   for(i=0;i<BUFFER_SIZE;i++)
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
+    Nsample++;
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
-    temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i]); 
+    temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i],KF_Q,KF_R); 
     //Serial.print(temp_kfdata);
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
-    IR_norm=Median_filter_small(temp_kfdata,FastHR);
+    IR_norm=Median_filter_small(temp_kfdata,7);
 
     if (ir_buffer[i] < BAD_CONTACT_TH)
       Serial.println("Bad contact");
@@ -58,17 +50,19 @@ void loop() {
     //Serial.println(IR_med[i]);
     res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
     if (res.NewBeat){
-      HR = res.HR;//(res.HR*60*FS)/BUFFER_SIZE;
-      Serial.println();Serial.print("@ HR=");Serial.print(HR);
+      // HR avearge for 20 beats
+      HR = (HR_FIFOSIZE*60*FS)/(Nsample-*(ptr));
+      Serial.print(Nsample);Serial.print("-> HR raw=");Serial.print(res.HR);Serial.print(" / HR =");Serial.print(HR);
+      // FIFO for HR=timeshtamp
+      *(ptr)=Nsample;
+      if (ptr==&Nbeats[HR_FIFOSIZE-1]){
+        ptr=&Nbeats[0];}
+      else{
+        ptr++;}
       Serial.print(" / SpO2=");Serial.println(res.spo2);
     }
     //------------ Calculation ---------------------
   }
-  if (HR>95)
-    FastHR=true;
-  else
-    FastHR=false;
-
   //Serial.print(red_buffer[i]);
   //Serial.print("  ");
   //Serial.println(ir_buffer[i]);
