@@ -17,6 +17,7 @@ uint32_t Nsample;
 uint32_t Nbeats[HR_FIFOSIZE];
 uint32_t* ptr = Nbeats;
 uint32_t HR;
+uint8_t cnt_after_badcontact;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
@@ -43,28 +44,32 @@ void loop() {
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
     IR_norm=Median_filter_small(temp_kfdata,7);
 
-    if (ir_buffer[i] < BAD_CONTACT_TH)
+    if (ir_buffer[i] < BAD_CONTACT_TH){
       Serial.println("Bad contact");
-    //Serial.print(temp_kfdata);
-    //Serial.print(" ");
-    //Serial.println(IR_med[i]);
-    res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
-    if (res.NewBeat){
-      // HR avearge for 20 beats
-      HR = (HR_FIFOSIZE*60*FS)/(Nsample-*(ptr));
-      Serial.print(Nsample);Serial.print("-> HR raw=");Serial.print(res.HR);Serial.print(" / HR =");Serial.print(HR);
-      // FIFO for HR=timeshtamp
-      *(ptr)=Nsample;
-      if (ptr==&Nbeats[HR_FIFOSIZE-1]){
-        ptr=&Nbeats[0];}
-      else{
-        ptr++;}
-      Serial.print(" / SpO2=");Serial.println(res.spo2);
+      ptr=&Nbeats[0];
+      cnt_after_badcontact=0;}
+    else {
+      res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
+      if (res.NewBeat){
+        if (cnt_after_badcontact<20){
+          cnt_after_badcontact++;
+          HR = (cnt_after_badcontact*60*FS)/(Nsample-Nbeats[0]);
+          }
+        // HR avearge for 20 beats
+        else {
+          HR = (HR_FIFOSIZE*60*FS)/(Nsample-*(ptr));}
+        Serial.print(Nsample);Serial.print("-> HR raw=");Serial.print(res.HR);Serial.print(" / HR =");Serial.print(HR);
+        // FIFO for HR=timeshtamp
+        *(ptr)=Nsample;
+        if (ptr==&Nbeats[HR_FIFOSIZE-1]){
+          ptr=&Nbeats[0];}
+        else
+          ptr++;
+        Serial.print(" / SpO2=");Serial.println(res.spo2);
+      }
     }
-    //------------ Calculation ---------------------
   }
-  //Serial.print(red_buffer[i]);
-  //Serial.print("  ");
-  //Serial.println(ir_buffer[i]);
 }
+
+
 
