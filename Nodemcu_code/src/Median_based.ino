@@ -7,7 +7,6 @@
 const byte oxiInt = 4; // pin connected to MAX30102 INT
 uint32_t ir_buffer[BUFFER_SIZE]; //infrared LED sensor data
 uint32_t red_buffer[BUFFER_SIZE];  //red LED sensor data
-int32_t IR [BUFFER_SIZE];
 int32_t IR_med [BUFFER_SIZE];  
 
 

@@ -100,7 +100,7 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
 struct element Back_to_extremum (uint32_t* ptrmas,bool up,uint32_t* startmas)
 {
       uint32_t* ptr;
-      ptr = ptrmas;//-DELAY_SIZE;
+      ptr = ptrmas-DELAY_SIZE;
       while (((*(ptr-1) >= *ptr)and(up==true))or((*(ptr-1) <= *ptr)and(up==false)))
       {
         ptr=ptr-1;
@@ -129,7 +129,7 @@ float StaticMedianFilter(float *array,int length)
 
 struct result MaxMin_search(int32_t *irmas,uint32_t *irmas_orig,uint32_t *redmas_orig,uint16_t length_mas){
 
-    float spo2_mas[20] = {};
+    float spo2_mas[25] = {};
     uint8_t error_mas[length_mas]={};
 
     int32_t Virmax = 0;
@@ -202,8 +202,8 @@ struct result MaxMin_search(int32_t *irmas,uint32_t *irmas_orig,uint32_t *redmas
             else if (error_mas[i-1]<4)
                 error_mas[i]=error_mas[i-1];
         }
-        if (error_mas[i]>0){}
-          //Serial.print("; ERROR[");Serial.print(i); Serial.print("]= ");Serial.print(error_mas[i]);} // TURN ON after test kalman 
+        if (error_mas[i]>0){
+          Serial.print("; ERROR[");Serial.print(i); Serial.print("]= ");Serial.print(error_mas[i]);} // TURN ON after test kalman 
      }
 
     struct result out{StaticMedianFilter(spo2_mas,HR_counter),error_mas[0],HR_counter};//Error_mas пока не сделан
