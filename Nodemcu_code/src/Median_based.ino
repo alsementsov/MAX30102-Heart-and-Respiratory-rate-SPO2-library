@@ -37,8 +37,9 @@ void loop() {
   for(i=0;i<BUFFER_SIZE;i++)
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
-    Nsample++;
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
+    //For STATION 
+    Nsample++;
     temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i],KF_Q,KF_R); 
     //Serial.print(temp_kfdata);
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
@@ -52,8 +53,8 @@ void loop() {
       res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
       if (res.NewBeat){
         if (cnt_after_badcontact<20){
-          cnt_after_badcontact++;
           HR = (cnt_after_badcontact*60*FS)/(Nsample-Nbeats[0]);
+          cnt_after_badcontact++;
           }
         // HR avearge for 20 beats
         else {
