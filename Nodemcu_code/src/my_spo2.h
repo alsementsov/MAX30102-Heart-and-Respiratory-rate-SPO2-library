@@ -19,7 +19,7 @@ struct result{
     uint8_t error;
     uint16_t HR;};
 struct element{
-    int32_t value;
+    uint32_t value;
     uint16_t index;};
 struct errors{
     uint8_t error;
@@ -29,10 +29,18 @@ uint32_t Median_filter(uint32_t datum);
 int32_t Median_filter_small(int32_t datum,bool FastHR);
 float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t Rminl,int32_t Rminr,float Ak,float Bk);
 struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16_t Told,float spo2,int32_t Vl,int32_t Vc,int32_t Vr);
-struct element Back_to_extremum (int32_t* ptrmas,bool up,int32_t* startmas);
+struct element Back_to_extremum (uint32_t* ptrmas,bool up,uint32_t* startmas);
 float StaticMedianFilter(float *array,int length);
-struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_orig,uint16_t length_mas);
+struct result MaxMin_search(int32_t *irmas,uint32_t *irmas_orig,uint32_t *redmas_orig,uint16_t length_mas);
 float Kalman_simple_filter(uint32_t val);
+
+
+
+
+
+
+
+
 
 /*uch_spo2_table is approximated as  -45.060*ratioAverage* ratioAverage + 30.354 *ratioAverage + 94.845 ;
 const float uch_spo2_table[184]=

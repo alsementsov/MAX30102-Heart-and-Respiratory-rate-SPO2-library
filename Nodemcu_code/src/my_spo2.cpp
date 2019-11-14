@@ -97,9 +97,9 @@ struct errors CheckForErrors(uint16_t Left,uint16_t Center,uint16_t Right,uint16
     struct errors out{Errorval,T};
     return out;
 };
-struct element Back_to_extremum (int32_t* ptrmas,bool up,int32_t* startmas)
+struct element Back_to_extremum (uint32_t* ptrmas,bool up,uint32_t* startmas)
 {
-      int32_t* ptr;
+      uint32_t* ptr;
       ptr = ptrmas;//-DELAY_SIZE;
       while (((*(ptr-1) >= *ptr)and(up==true))or((*(ptr-1) <= *ptr)and(up==false)))
       {
@@ -127,7 +127,7 @@ float StaticMedianFilter(float *array,int length)
 	return float(array[length/2]+array[(length/2)-1])/2;
 }
 
-struct result MaxMin_search(int32_t *irmas,int32_t *irmas_orig,int32_t *redmas_orig,uint16_t length_mas){
+struct result MaxMin_search(int32_t *irmas,uint32_t *irmas_orig,uint32_t *redmas_orig,uint16_t length_mas){
 
     float spo2_mas[20] = {};
     uint8_t error_mas[length_mas]={};

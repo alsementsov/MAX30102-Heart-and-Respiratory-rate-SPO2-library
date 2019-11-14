@@ -9,11 +9,7 @@ uint32_t ir_buffer[BUFFER_SIZE]; //infrared LED sensor data
 uint32_t red_buffer[BUFFER_SIZE];  //red LED sensor data
 int32_t IR [BUFFER_SIZE];
 int32_t IR_med [BUFFER_SIZE];  
-int32_t IR_read[BUFFER_SIZE];
-int32_t IR_temp[DELAY_SIZE];
-int32_t Red_read[BUFFER_SIZE];
-int32_t Red_temp[DELAY_SIZE];
-const int sizeM = sizeof(IR_temp);
+
 
 float spo2;
 float spo2_old;
@@ -44,22 +40,16 @@ void setup() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every ST seconds
 void loop() {
-  float n_spo2,ratio,correl;  //SPO2 value
-  int8_t ch_spo2_valid;  //indicator to show if the SPO2 calculation is valid
-  int32_t n_heart_rate; //heart rate value
-  int8_t  ch_hr_valid;  //indicator to show if the heart rate calculation is valid
   int32_t i;
-  char hr_str[10];
-  //buffer length of BUFFER_SIZE stores ST seconds of samples running at FS sps
-  //read BUFFER_SIZE samples, and determine the signal range
+
   BadContact = false;
+  //------------ Reading Sensor ---------------------
   for(i=0;i<BUFFER_SIZE;i++)
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
     temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i]); 
     //Serial.print(temp_kfdata);
-    //j = (i==(MEDIAN_FILTER_SIZE-1)/2)?0:j+1;
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
     IR_med[i]=Median_filter_small(temp_kfdata,FastHR);
 
@@ -69,15 +59,13 @@ void loop() {
     //Serial.print(" ");
     //Serial.println(IR_med[i]);
   }
-  struct result res = MaxMin_search(IR_med,IR_read,Red_read,BUFFER_SIZE);
+  //------------ Calculation ---------------------
+  struct result res = MaxMin_search(IR_med,ir_buffer,red_buffer,BUFFER_SIZE);
   int HR = (res.HR*60*FS)/BUFFER_SIZE;
 
   Serial.println();Serial.print("@ HR=");Serial.print(HR);
   Serial.print(" / SpO2=");Serial.println(res.spo2);
-  for (int i=0;i<DELAY_SIZE;i++){
-    IR_read[i]=IR_temp[i];
-    Red_read[i]=Red_temp[i];
-  }
+
   if (HR>95)
     FastHR=true;
   else
