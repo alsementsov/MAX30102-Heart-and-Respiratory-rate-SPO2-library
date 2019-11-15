@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "my_spo2.h"
-/////// Median filter //////////////////// 
 
 float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t Rminl,int32_t Rminr)
   {
@@ -20,7 +19,6 @@ uint8_t CheckForErrors(uint16_t T,uint16_t Tmax,float spo2,int32_t Vl,int32_t Vc
     Error = 0;
     if (Told!=0){
         float div=float(T)/float(Told);
-        //Serial.print(T);Serial.print("/");Serial.print(Told);Serial.print("/");Serial.println(div);
         if ((div > 2.5) or (div < 0.4))
             Error=1;
     }
@@ -30,23 +28,6 @@ uint8_t CheckForErrors(uint16_t T,uint16_t Tmax,float spo2,int32_t Vl,int32_t Vc
         Error=3;
     return Error;
 };
-
-float StaticMedianFilter(float *array,int length)
-{
-	for (int startIndex = 0; startIndex < length/2+1; ++startIndex)
-	{
-		int smallestIndex = startIndex;
-		for (int currentIndex = startIndex + 1; currentIndex < length; ++currentIndex)
-		{
-			if (array[currentIndex] < array[smallestIndex])
-				smallestIndex = currentIndex;
-		}
-        float temp = array[startIndex];
-        array[startIndex]=array[smallestIndex];
-        array[smallestIndex]=temp;
-	}
-	return float(array[length/2]+array[(length/2)-1])/2;
-}
 
 int32_t Median_filter_small(int32_t datum,int MF_SIZE)
 {
@@ -120,91 +101,86 @@ int32_t Median_filter_small(int32_t datum,int MF_SIZE)
 }
 float Kalman_simple_filter(uint32_t val,float Q,float R)
 {
- static float Xe = 0;
- static float Xp;
- static float P = 1;
- static float Pc;
- static float K;
+  static float Xe = 0;
+  static float Xp;
+  static float P = 1;
+  static float Pc;
+  static float K;
 
-if ((Xe==0)&&(P==1)){
-  Xe=val;
-}
- Xp = Xe;
- Pc = P + Q;
- K = Pc/(Pc + R);
- P = (1-K)*Pc;
- Xe = K*(val-Xp)+Xp; 
- return Xe;
+  if ((Xe==0)&&(P==1)){
+    Xe=val;
+  }
+  Xp = Xe;
+  Pc = P + Q;
+  K = Pc/(Pc + R);
+  P = (1-K)*Pc;
+  Xe = K*(val-Xp)+Xp; 
+  return Xe;
 }
 
 struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
 {
-    static bool searching_max = true;
-    static int32_t Virmax = 0;
-    static int32_t Virmin=0;
-    static int32_t Vrmax=0;
-    static int32_t Vrmin=0;
-    static uint16_t Min_cnt=0;
-    static uint16_t Max_cnt=0;
-    static uint32_t HR_counter=0;
-    static int32_t IRnorm_prev=0;
-    static uint32_t Virmin_new=0;
-    static uint32_t Vrmin_new=0;
-    
-    static uint8_t error;
-    //struct element elm;
-    bool NewBeat;
-    float spo2=0;
-    
-    //Serial.print("[");Serial.print(i);Serial.print("]=");Serial.println(irmas[i]);
-    NewBeat=false;
+  static bool searching_max = true;
+  static int32_t Virmax = 0;
+  static int32_t Virmin=0;
+  static int32_t Vrmax=0;
+  static int32_t Vrmin=0;
+  static uint16_t Min_cnt=0;
+  static uint16_t Max_cnt=0;
+  static uint32_t HR_counter=0;
+  static int32_t IRnorm_prev=0;
+  static uint32_t Virmin_new=0;
+  static uint32_t Vrmin_new=0;
   
-    // -------- Поиск максимумов и минимумов в сырых данных -----------------
-    if (IR>=Virmax){
-      Virmax=IR;
-      Virmin_new=IR;}
-    else if (IR<=Virmin_new){
-      Virmin_new=IR; }
-    if (RED>=Vrmax){
-      Vrmax=RED;
-      Vrmin_new=RED;}
-    else if (RED<=Vrmin_new){
-      Vrmin_new=RED; }
-    // -----Поиск экстремумов в потоке и расчет HR и SPO2 на каждом найденном минимуме
-    int32_t delta=abs(IRnorm-IRnorm_prev);
-    if (searching_max){
-        if ((IRnorm < IRnorm_prev)and(delta>=2)){ // Maximum
-            searching_max = false;
-            Max_cnt=0;}
-    }
-    else if ((IRnorm > IRnorm_prev)and(delta>=2)){// Minimum
-        //elm = Back_to_extremum(&irmas_orig[i],false,irmas_orig);
-        searching_max = true;
-        //SPO2
-        NewBeat=true;
-        spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new);
-        error = CheckForErrors(Min_cnt,Max_cnt,spo2,Virmin,Virmax,Virmin_new);
-        if (error<=1){
-            HR_counter++;
-        }
-        if (error>0)
-          Serial.print(" | Error=");Serial.print(error);
-        Min_cnt=0;
-        Max_cnt=0;
-        Virmin=Virmin_new;
-        Vrmin=Vrmin_new;
-        Virmax=Virmin_new;
-        Vrmax=Vrmin_new;
-    }
-    if ((Min_cnt>62)||(Max_cnt>31)){//Завит от fps
-      error=4;
-      Serial.print(" | Error=4");
-    }
-    IRnorm_prev=IRnorm;
-    Max_cnt++;
-    Min_cnt++;
-    struct result out{spo2,error,HR_counter,NewBeat};
-    return out;
+  static uint8_t error;
+  bool NewBeat;
+  float spo2=0;
+  NewBeat=false;
+
+  // -------- Поиск максимумов и минимумов в сырых данных -----------------
+  if (IR>=Virmax){
+    Virmax=IR;
+    Virmin_new=IR;}
+  else if (IR<=Virmin_new){
+    Virmin_new=IR; }
+  if (RED>=Vrmax){
+    Vrmax=RED;
+    Vrmin_new=RED;}
+  else if (RED<=Vrmin_new){
+    Vrmin_new=RED; }
+  // -----Поиск экстремумов в потоке и расчет HR и SPO2 на каждом найденном минимуме
+  int32_t delta=abs(IRnorm-IRnorm_prev);
+  if (searching_max){
+      if ((IRnorm < IRnorm_prev)and(delta>=2)){ // Maximum
+          searching_max = false;
+          Max_cnt=0;}
+  }
+  else if ((IRnorm > IRnorm_prev)and(delta>=2)){// Minimum
+      searching_max = true;
+      NewBeat=true;
+      spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new);
+      error = CheckForErrors(Min_cnt,Max_cnt,spo2,Virmin,Virmax,Virmin_new);
+      if (error<=1){
+          HR_counter++;
+      }
+      //if (error>0)
+        //Serial.println(" | Error=");Serial.print(error);
+      Min_cnt=0;
+      Max_cnt=0;
+      Virmin=Virmin_new;
+      Vrmin=Vrmin_new;
+      Virmax=Virmin_new;
+      Vrmax=Vrmin_new;
+  }
+  if ((Min_cnt>62)||(Max_cnt>31)){//Завит от fps
+    error=4;
+    //Serial.println(" | Error=4");
+  }
+  IRnorm_prev=IRnorm;
+  Max_cnt++;
+  Min_cnt++;
+  struct result out{spo2,error,HR_counter,NewBeat};
+  return out;
 }
 float Median_filter_spo2(float datum)
 {

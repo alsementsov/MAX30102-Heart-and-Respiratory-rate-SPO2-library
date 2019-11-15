@@ -31,16 +31,14 @@ void setup() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every ST seconds
 void loop() {
-  int32_t i;
    //------------ Reading Sensor ---------------------
-  for(i=0;i<BUFFER_SIZE;i++)
+  for(uint16_t i=0;i<BUFFER_SIZE;i++)
   {
     while(digitalRead(oxiInt)==1);  //wait until the interrupt pin asserts
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
     ////////////////////////////////For STATION///////////////////////////////////// 
     Nsample++;
     temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i],KF_Q,KF_R); 
-    //Serial.print(temp_kfdata);
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
     IR_norm=Median_filter_small(temp_kfdata,7);
 
@@ -59,7 +57,7 @@ void loop() {
         // HR avearge for 20 beats
         else {
           HR = (HR_FIFOSIZE*60*FS)/(Nsample-*(ptr));}
-        Serial.print(Nsample);Serial.print(": HR =");Serial.print(HR);
+        Serial.print(Nsample);Serial.print(": HR=");Serial.print(HR);
         // FIFO for HR time stamp
         *(ptr)=Nsample;
         if (ptr==&Nbeats[HR_FIFOSIZE-1]){
@@ -70,8 +68,12 @@ void loop() {
         //Serial.print(" / SpO2_cur=");Serial.print(res.spo2);
         //Average spo2 for visualization 
         spo2 = Median_filter_spo2(res.spo2);
-        Serial.print(" / SpO2 =");Serial.println(spo2);
+        Serial.print(" / SpO2=");Serial.println(spo2);
+        if (res.error>0){
+          Serial.print("Error=");Serial.println(res.error);}
       }
+      if (res.error==4)
+        Serial.println("Alarm! No heartbeats!");
     }
   }
 }
