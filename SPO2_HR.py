@@ -11,8 +11,8 @@ A = 104.5
 B = 16.5
 Size_Lf = 7
 Size_Lf_spo2=13
-Q = 0.00002 #SKF process variance   -5 
-R = 0.1**2  # SKF estimate of measurement variance, change to see effect
+Q = 0.00005#0.00002  #SKF process variance   -5 
+R = 0.001#0.01  # SKF estimate of measurement variance, change to see effect
 ############ Functions
 def KalmanFilter(mas):
     # intial parameters

@@ -137,8 +137,8 @@ if ((Xe==0)&&(P==1)){
  return Xe;
 }
 
-struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED){
-
+struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
+{
     static bool searching_max = true;
     static int32_t Virmax = 0;
     static int32_t Virmin=0;
@@ -205,4 +205,74 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED){
     Min_cnt++;
     struct result out{spo2,error,HR_counter,NewBeat};
     return out;
+}
+float Median_filter_spo2(float datum)
+{
+  const uint8_t buf_size = 11;
+  struct pair
+  {
+    struct pair   *point;                              /* Pointers forming list linked in sorted order */
+    float value;                                   /* Values to sort */
+  };
+  static struct pair buffer[buf_size] = {0};        /* Buffer of nwidth pairs */
+  static struct pair *datpoint = buffer;               /* Pointer into circular buffer of data */
+  static struct pair small = {NULL, -5000};          /* Chain stopper */
+  static struct pair big = {&small, 0};                /* Pointer to head (largest) of linked list.*/
+  struct pair *successor;                              /* Pointer to successor of replaced data item */
+  struct pair *scan;                                   /* Pointer used to scan down the sorted list */
+  struct pair *scanold;                                /* Previous value of scan */
+  struct pair *median;                                 /* Pointer to median */
+  uint16_t i;
+  if (datum == -5000)  {
+    datum = -5000 + 1;                            /* No stoppers allowed. */
+  }
+  
+ if ( (++datpoint - buffer) >= buf_size)  {
+    datpoint = buffer;                               /* Increment and wrap data in pointer.*/
+  }
+  datpoint->value = datum;                           /* Copy in new datum */
+  successor = datpoint->point;                       /* Save pointer to old value's successor */
+  median = &big;                                     /* Median initially to first in chain */
+  scanold = NULL;                                    /* Scanold initially null. */
+  scan = &big;                                       /* Points to pointer to first (largest) datum in chain */
+
+  /* Handle chain-out of first item in chain as special case */
+  if (scan->point == datpoint)  {
+    scan->point = successor;}
+  scanold = scan;                                     /* Save this pointer and   */
+  scan = scan->point ;                                /* step down chain */
+  /* Loop through the chain, normal loop exit via break. */
+  for (i = 0 ; i < buf_size; ++i)  {
+    /* Handle odd-numbered item in chain  */
+    if (scan->point == datpoint)    {
+      scan->point = successor;                    /* Chain out the old datum.*/
+    }
+    if (scan->value < datum)                      /* If datum is larger than scanned value,*/
+    {
+      datpoint->point = scanold->point;             /* Chain it in here.  */
+      scanold->point = datpoint;
+      datum = -5000;                    /* Mark it chained in. */
+    }
+    /* Step median pointer down chain after doing odd-numbered element */
+    median = median->point;                       /* Step median pointer.  */
+    if (scan == &small){
+      break;                                      /* Break at end of chain  */
+    }
+    scanold = scan;                               /* Save this pointer and   */
+    scan = scan->point;                           /* step down chain */
+    /* Handle even-numbered item in chain.  */
+    if (scan->point == datpoint){
+      scan->point = successor;
+    }
+    if (scan->value < datum)    {
+      datpoint->point = scanold->point;
+      scanold->point = datpoint;
+      datum = -5000;
+    }
+    if (scan == &small)  {
+      break; }
+    scanold = scan;
+    scan = scan->point;
+  }
+  return median->value;
 }

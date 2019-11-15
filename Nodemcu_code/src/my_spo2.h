@@ -27,13 +27,13 @@ struct element{
     uint32_t value;
     uint16_t index;};
 
-uint32_t Median_filter(uint32_t datum);
 int32_t Median_filter_small(int32_t datum,int MF_SIZE);
 float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t Rminl,int32_t Rminr);
 uint8_t CheckForErrors(uint16_t T,uint16_t Tmax,float spo2,int32_t Vl,int32_t Vc,int32_t Vr);
 float StaticMedianFilter(float *array,int length);
 struct result MaxMin_search_stream(int32_t irmas,uint32_t irmas_orig,uint32_t redmas_orig);
 float Kalman_simple_filter(uint32_t val, float Q, float R);
+float Median_filter_spo2(float datum);
 
 
 
