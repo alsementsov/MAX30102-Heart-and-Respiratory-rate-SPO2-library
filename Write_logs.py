@@ -17,7 +17,7 @@ def plot_records(lrows):
     Red = np.array(records[2:,0],dtype=int)
     IR = np.array(records[2:,1],dtype=int)
     plt.grid(axis='both',linestyle = '--')
-    plt.plot(Red)
+    #plt.plot(Red)
     plt.plot(IR,color='red')
     #if (Save_to_file==1):
         #plt.savefig(Filename+'.png',quality =95,dpi=300)
