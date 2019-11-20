@@ -208,32 +208,36 @@ Vmax_index=0
 for sample in maxs_f:
    delta=abs(sample-sample_prev)
    if searching_max: 
-       if (sample< sample_prev):
-            if (abs(sample_prev-Vmin)>16):           
-                searching_max = False
-                Vmax_index=i-1
-                Vmax=sample_prev
+       if (sample< sample_prev):      
+            searching_max = False
+            Vmax_index=i-1
+            Vmax=sample_prev
+            print('Vmax_index='+str(Vmax_index))
    elif (sample > sample_prev):
        ampl1 = abs(Vmin-Vmax)
        ampl2 = abs(sample_prev-Vmax)
        print('AMPL='+str(ampl1+ampl2))
        print('Vmin='+str(Vmin))
        print('Vmax='+str(Vmax))
-       if (((ampl1+ampl2) > 80)and(ampl1>10)and(ampl2>10)):
+       print('Vmin_new='+str(sample_prev))
+       print('ampl1='+str(ampl1))
+       print('ampl2='+str(ampl2))
+       if (((ampl1+ampl2) > 75)and(ampl1>15)and(ampl2>15)):
            searching_max = True
            Vmin = sample_prev  
            Resp.append(Vmax)
            Resp_index.append(Vmax_index)
            Resp_cnt=Resp_cnt+1
-           print('Vmax_index'+str(Vmax_index))   
+           print('Vmax_index='+str(Vmax_index))   
        else:
            searching_max=True
-           Vmin = sample_prev 
+           Vmin = sample_prev
    sample_prev = sample
    i=i+1
    print(i)
    print(searching_max)
-RR = int(Resp_cnt/T_in_minute);    
+
+RR = round(Resp_cnt/T_in_minute,1);    
 
 
 
