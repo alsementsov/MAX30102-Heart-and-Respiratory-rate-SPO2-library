@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy import genfromtxt
 import scipy.signal as sig
-import pylab
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
+import pylab
 ############ CONSTANT
 FPS = 25
 A = 104.5
@@ -113,7 +113,7 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
                 rmax.append(Vrmax)
                 rmax_index.append(i)
                 max_index=i
-                maxs.append(sample_prev)
+                #maxs.append(sample_prev)
         elif (sample > sample_prev)and(delta>=5):
             Virmin_new,i = back_to_extremum(irmas_orig,cnt,"down")  
             irmin.append(Virmin_new)
@@ -134,6 +134,7 @@ def MaxMin_search(irmas,irmas_orig,redmas_orig):
                 error_mas[cnt]=error
                 if error<=1:
                     HR_counter=HR_counter+1
+                    maxs.append(sample_prev)
             left_index=i
             Virmin=Virmin_new
             Vrmin=Vrmin_new
@@ -163,12 +164,10 @@ Red_read = np.array(records[2:,0],dtype=int)
 IR_read = np.array(records[2:,1],dtype=int)
 #Big MEDIAN = To improve performance (may be excluded)
 #IR_med= sig.medfilt(IR_read,5)
-IR_kalman = KalmanFilter(IR_read,Q,R)
-#IR_kalman = KalmanFilter(IR_kalman,Q,R)# Smoothing
-
+IR_kalman_1 = KalmanFilter(IR_read,Q,R)
+IR_kalman = KalmanFilter(IR_kalman_1,Q,R)# Smoothing
 
 IR = IR_read - IR_kalman # without DC
-# Small MEDIAN
 IR_med = sig.medfilt(IR,7)
 
 irmax,irmin,irmax_i,irmin_i,rmax,rmin,rmax_i,rmin_i,irmax_med,irmin_med,irmax_med_i,irmin_med_i,spo2,errors,HR_raw,maxs= MaxMin_search(IR_med,IR_read,Red_read)  
@@ -182,34 +181,58 @@ HR = int(HR_raw/T_in_minute);
 
 ############## RR ##################################
 
-if (HR>100):
-    maxs_f = KalmanFilter(maxs,0.01,0.01)
-elif (HR>78):
-    maxs_f = KalmanFilter(maxs,0.005,0.01)
-    print('80')
-else:
-    maxs_f = KalmanFilter(maxs,0.001,0.01)#0.0005
+# if (HR>100):
+#     maxs_f = KalmanFilter(maxs,0.01,0.01)
+# elif (HR>78):
+#     maxs_f = KalmanFilter(maxs,0.005,0.01)
+#     print('80')
+# else:
+#     maxs_f = KalmanFilter(maxs,0.0003,0.02)#0.0005
 
+maxs_f=maxs
 
 Resp=[];
 Resp_cnt=0;
-searching_max = True
+if maxs_f[0]>maxs_f[1]:
+    searching_max = False
+    Vmax=maxs_f[0]
+else:
+    searching_max = True
+    Vmax=0
 Resp_index=[]
 i=0
 sample_prev=maxs_f[0]
+Vmin=0
+Vmax_index=0
 
 for sample in maxs_f:
    delta=abs(sample-sample_prev)
    if searching_max: 
-       if (sample< sample_prev)and(delta>=5):               
-            Resp.append(sample_prev)
-            searching_max = False
-            Resp_index.append(i-1)
-            Resp_cnt=Resp_cnt+1
-   elif (sample > sample_prev)and(delta>=5):
-       searching_max = True
+       if (sample< sample_prev):
+            if (abs(sample_prev-Vmin)>16):           
+                searching_max = False
+                Vmax_index=i-1
+                Vmax=sample_prev
+   elif (sample > sample_prev):
+       ampl1 = abs(Vmin-Vmax)
+       ampl2 = abs(sample_prev-Vmax)
+       print('AMPL='+str(ampl1+ampl2))
+       print('Vmin='+str(Vmin))
+       print('Vmax='+str(Vmax))
+       if (((ampl1+ampl2) > 80)and(ampl1>10)and(ampl2>10)):
+           searching_max = True
+           Vmin = sample_prev  
+           Resp.append(Vmax)
+           Resp_index.append(Vmax_index)
+           Resp_cnt=Resp_cnt+1
+           print('Vmax_index'+str(Vmax_index))   
+       else:
+           searching_max=True
+           Vmin = sample_prev 
    sample_prev = sample
    i=i+1
+   print(i)
+   print(searching_max)
 RR = int(Resp_cnt/T_in_minute);    
 
 
@@ -223,6 +246,7 @@ plt.plot(irmax_i,irmax,'o')
 plt.plot(irmin_i,irmin,'o')
 plt.plot(IR_kalman,color='purple',linewidth ='2')#errors
 plt.title("IR ch. (HR= "+str(HR)+" beats/minute)")
+plt.xticks(np.arange(0, len(IR_read), step=FPS*5),np.arange(0, int(len(IR_read)/(FPS)),step=5))
 
 plt.subplot(222)
 plt.grid(axis='both',linestyle = '--')
@@ -231,22 +255,19 @@ plt.plot(rmax_i,rmax,'o')
 plt.plot(rmin_i,rmin,'o')
 plt.title("RED ch.")
 
-# plt.subplot(223)
-# plt.grid(axis='both',linestyle = '--')
-# plt.plot(IR,color='purple',linewidth ='2')
-# plt.plot(IR_med,color='blue',linewidth ='2')
-# plt.title("HR= "+str(HR)+" beats/minute")
-
+plt.subplot(224)
+plt.grid(axis='both',linestyle = '--')
+#plt.plot(IR,color='purple',linewidth ='2')
+plt.plot(IR_med,color='red',linewidth ='2')
+#plt.plot(IR_1,color='blue',linewidth ='2')
+plt.title("HR= "+str(HR)+" beats/minute")
 
 plt.subplot(223)
 plt.title(" === Mins ===")
-plt.grid(axis='both',linestyle = '--')
-plt.plot(maxs,color='red',linewidth ='2')
-plt.plot(maxs_f,color='blue',linewidth ='2')
+plt.grid(axis='both',linestyle = '--',)
+plt.plot(maxs_f,color='purple',linewidth ='2')
 plt.plot(Resp_index,Resp,'o')
 plt.title("Respiratory rate="+str(RR)+" breaths/minute")
-
-
 
 
 
@@ -256,16 +277,16 @@ plt.title("Respiratory rate="+str(RR)+" breaths/minute")
 # plt.title("IR pulses = "+str(len(irmax))+"("+str(int(len(irmax)/T_in_minute))+") /  HR= "+str(HR))
 # plt.ylim((0, 4.5))
 
-plt.subplot(224)
-plt.title(" === SpO2 ===")
-plt.ylim((93, 100))
-pylab.yticks(range(93, 100,1))
-plt.grid(axis='both',linestyle = '--')
-plt.plot(spo2_med,color='red',linewidth ='2')
+# plt.subplot(224)
+# plt.title(" === SpO2 ===")
+# plt.ylim((93, 100))
+# pylab.yticks(range(93, 100,1))
+# plt.grid(axis='both',linestyle = '--')
+# plt.plot(spo2_med,color='red',linewidth ='2')
 
 figManager = plt.get_current_fig_manager()
 figManager.window.showMaximized()
 plt.show()
-           
+
 
 
