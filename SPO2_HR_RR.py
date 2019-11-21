@@ -181,13 +181,6 @@ HR = int(HR_raw/T_in_minute);
 
 ############## RR ##################################
 
-# if (HR>100):
-#     maxs_f = KalmanFilter(maxs,0.01,0.01)
-# elif (HR>78):
-#     maxs_f = KalmanFilter(maxs,0.005,0.01)
-#     print('80')
-# else:
-#     maxs_f = KalmanFilter(maxs,0.0003,0.02)#0.0005
 
 maxs_f=maxs
 
@@ -272,8 +265,6 @@ plt.grid(axis='both',linestyle = '--',)
 plt.plot(maxs_f,color='purple',linewidth ='2')
 plt.plot(Resp_index,Resp,'o')
 plt.title("Respiratory rate="+str(RR)+" breaths/minute")
-
-
 
 # plt.subplot(223)
 # plt.grid(axis='both',linestyle = '--')
