@@ -50,7 +50,6 @@ void loop() {
       // Find MAX MIN
       res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
       if (res.NewBeat){
-        //Serial.print(Nsample);
         //Average spo2 for visualization 
         spo2 = Median_filter_spo2(res.spo2);
         // Starting conditions
@@ -59,8 +58,6 @@ void loop() {
             Nbeats[0]=Nsample;}
           else{
             HR = ((cnt_after_badcontact-1)*60*FS)/(Nsample-Nbeats[0]);
-            //Serial.print(": cnt= ");Serial.print(cnt_after_badcontact);
-            //Serial.print("// Nbeats[0]= ");Serial.println(Nbeats[0]);
             Serial.print(": HR=");Serial.print(HR);
             Serial.print(" / SpO2=");Serial.println(spo2);
             }

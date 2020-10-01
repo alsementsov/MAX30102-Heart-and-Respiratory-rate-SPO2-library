@@ -117,7 +117,6 @@ float Kalman_simple_filter(uint32_t val,float Q,float R)
   Xe = K*(val-Xp)+Xp; 
   return Xe;
 }
-
 struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
 {
   static bool searching_max = true;
@@ -127,7 +126,6 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
   static int32_t Vrmin=0;
   static uint16_t Min_cnt=0;
   static uint16_t Max_cnt=0;
-  static uint32_t HR_counter=0;
   static int32_t IRnorm_prev=0;
   static uint32_t Virmin_new=0;
   static uint32_t Vrmin_new=0;
@@ -157,14 +155,16 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
   }
   else if ((IRnorm > IRnorm_prev)and(delta>=2)){// Minimum
       searching_max = true;
-      NewBeat=true;
+      //NewBeat=true;// Первая версия (в Python этой строчки здесь нет)
       spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new);
       error = CheckForErrors(Min_cnt,Max_cnt,spo2,Virmin,Virmax,Virmin_new);
       if (error<=1){
-          HR_counter++;
+          NewBeat=true;
+          // add MAXS
+
       }
       //if (error>0)
-        //Serial.println(" | Error=");Serial.print(error);
+      //Serial.println(" | Error=");Serial.print(error);
       Min_cnt=0;
       Max_cnt=0;
       Virmin=Virmin_new;
@@ -179,7 +179,7 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
   IRnorm_prev=IRnorm;
   Max_cnt++;
   Min_cnt++;
-  struct result out{spo2,error,HR_counter,NewBeat};
+  struct result out{spo2,error,NewBeat};
   return out;
 }
 float Median_filter_spo2(float datum)
