@@ -21,6 +21,7 @@ struct result
     float spo2;
     uint8_t error;
     bool NewBeat;
+    bool RR_NewBeat;
 };
 struct element{
     uint32_t value;
@@ -33,7 +34,7 @@ float StaticMedianFilter(float *array,int length);
 struct result MaxMin_search_stream(int32_t irmas,uint32_t irmas_orig,uint32_t redmas_orig);
 float Kalman_simple_filter(uint32_t val, float Q, float R);
 float Median_filter_spo2(float datum);
-
+bool RR_calc(int32_t maxs);
 
 
 

@@ -132,8 +132,10 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
   
   static uint8_t error;
   bool NewBeat;
+  bool RR_NewBeat;
   float spo2=0;
   NewBeat=false;
+  RR_NewBeat = false;
 
   // -------- Поиск максимумов и минимумов в сырых данных -----------------
   if (IR>=Virmax){
@@ -153,15 +155,17 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
           searching_max = false;
           Max_cnt=0;}
   }
-  else if ((IRnorm > IRnorm_prev)and(delta>=2)){// Minimum
+  else if ((IRnorm > IRnorm_prev)and(delta>=2))
+  {// Minimum
       searching_max = true;
       //NewBeat=true;// Первая версия (в Python этой строчки здесь нет)
       spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new);
       error = CheckForErrors(Min_cnt,Max_cnt,spo2,Virmin,Virmax,Virmin_new);
-      if (error<=1){
-          NewBeat=true;
-          // add MAXS
-
+      if (error<=1)
+      {
+          NewBeat=true;//NEW Heart BEAT!!!
+          // Respiratory analysis
+          RR_NewBeat = RR_calc(IRnorm_prev);
       }
       //if (error>0)
       //Serial.println(" | Error=");Serial.print(error);
@@ -179,7 +183,7 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
   IRnorm_prev=IRnorm;
   Max_cnt++;
   Min_cnt++;
-  struct result out{spo2,error,NewBeat};
+  struct result out{spo2,error,NewBeat,RR_NewBeat};
   return out;
 }
 float Median_filter_spo2(float datum)
@@ -251,4 +255,65 @@ float Median_filter_spo2(float datum)
     scan = scan->point;
   }
   return median->value;
+}
+
+// Respiratory rate calculation
+bool RR_calc(int32_t maxs)
+{
+  bool result=false;
+  static int32_t maxs_prev=0;
+  static bool flagstart = true;
+  static int32_t Vmin=0;
+  static int32_t Vmax;
+  int32_t ampl1;
+  int32_t ampl2;
+  static bool searching_max;
+  // Starting conditions
+  if ((maxs_prev!=0)&&(flagstart))
+  {
+    flagstart=false;
+    if (maxs_prev > maxs){
+      searching_max = false;
+      Vmax=maxs_prev;
+    }
+    else{
+      searching_max = true;
+      Vmax=maxs;// был 0 в модели
+    }
+  }
+  // Main IF
+  if (searching_max)
+  {
+    if (maxs < maxs_prev)
+    {     
+      searching_max = false;
+      Vmax=maxs_prev;
+    }
+  }
+  else if (maxs > maxs_prev)
+  {
+    ampl1 = abs(Vmin-Vmax);
+    ampl2 = abs(maxs_prev-Vmax);
+    // Serial.print("AMPL="+str(ampl1+ampl2));
+    // Serial.print("Vmin="+str(Vmin));
+    // Serial.print("Vmax="+str(Vmax));
+    // Serial.print("Vmin_new="+str(sample_prv));
+    // Serial.print("ampl1"+str(ampl1));
+    // Serial.print("ampl2="+str(ampl2));
+    if (((ampl1+ampl2) > 75)and(ampl1>15)and(ampl2>15))
+    {
+      searching_max = true;
+      Vmin = maxs_prev;  
+      result = true;
+      Serial.println("---RR beat---"); 
+    }
+    else
+    {
+      searching_max=true;
+      Vmin = maxs_prev;
+    }
+  }
+  maxs_prev = maxs;
+  Serial.println(searching_max);
+  return result;
 }
