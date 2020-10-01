@@ -43,7 +43,7 @@ void loop() {
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
     IR_norm=Median_filter_small(temp_kfdata,7);
     if (ir_buffer[i] < BAD_CONTACT_TH){
-      Serial.println("Bad contact");
+      //Serial.println("Bad contact");
       ptr=&Nbeats[0];
       cnt_after_badcontact=0;}
     else {
