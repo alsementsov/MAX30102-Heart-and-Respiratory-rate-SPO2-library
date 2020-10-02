@@ -99,7 +99,25 @@ int32_t Median_filter_small(int32_t datum,int MF_SIZE)
   }
   return median->value;
 }
-float Kalman_simple_filter(uint32_t val,float Q,float R)
+float Kalman_simple_filter1(int32_t val,float Q,float R)
+{
+  static float Xe = 0;
+  static float Xp;
+  static float P = 1;
+  static float Pc;
+  static float K;
+
+  if ((Xe==0)&&(P==1)){
+    Xe=val;
+  }
+  Xp = Xe;
+  Pc = P + Q;
+  K = Pc/(Pc + R);
+  P = (1-K)*Pc;
+  Xe = K*(val-Xp)+Xp; 
+  return Xe;
+}
+float Kalman_simple_filter2(int32_t val,float Q,float R)
 {
   static float Xe = 0;
   static float Xp;

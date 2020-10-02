@@ -33,7 +33,8 @@ float Spo2_calc(int32_t IRmax,int32_t IRminl,int32_t IRminr,int32_t Rmax,int32_t
 uint8_t CheckForErrors(uint16_t T,uint16_t Tmax,float spo2,int32_t Vl,int32_t Vc,int32_t Vr);
 float StaticMedianFilter(float *array,int length);
 struct result MaxMin_search_stream(int32_t irmas,uint32_t irmas_orig,uint32_t redmas_orig);
-float Kalman_simple_filter(uint32_t val, float Q, float R);
+float Kalman_simple_filter1(int32_t val, float Q, float R);
+float Kalman_simple_filter2(int32_t val, float Q, float R);
 float Median_filter_spo2(float datum);
 bool RR_calc(int32_t maxs);
 

@@ -9,6 +9,7 @@ uint32_t ir_buffer[BUFFER_SIZE]; //infrared LED sensor data
 uint32_t red_buffer[BUFFER_SIZE];  //red LED sensor data
 bool BadContact;
 int32_t temp_kfdata;
+int32_t temp_kfdata1;
 int32_t IR_norm;
 struct result res;
 uint32_t Nsample;
@@ -44,8 +45,9 @@ void loop()
     maxim_max30102_read_fifo((red_buffer+i), (ir_buffer+i));  //read from MAX30102 FIFO
     ////////////////////////////////For STATION///////////////////////////////////// 
     Nsample++;
-    temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i],KF_Q,KF_R); 
-    temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
+    temp_kfdata =Kalman_simple_filter1((int32_t)ir_buffer[i],KF_Q,KF_R); // Need to add double
+    temp_kfdata1 = Kalman_simple_filter2(temp_kfdata,KF_Q,KF_R);;
+    temp_kfdata1 =(int32_t)ir_buffer[i]-temp_kfdata1;
     IR_norm=Median_filter_small(temp_kfdata,7);
     if (ir_buffer[i] < BAD_CONTACT_TH)
     {
