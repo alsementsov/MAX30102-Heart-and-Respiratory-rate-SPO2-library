@@ -167,8 +167,6 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
           // Respiratory analysis
           RR_NewBeat = RR_calc(IRnorm_prev);
       }
-      //if (error>0)
-      //Serial.println(" | Error=");Serial.print(error);
       Min_cnt=0;
       Max_cnt=0;
       Virmin=Virmin_new;
@@ -176,7 +174,7 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
       Virmax=Virmin_new;
       Vrmax=Vrmin_new;
   }
-  if ((Min_cnt>62)||(Max_cnt>31)){//Завит от fps
+  if ((Min_cnt>62)||(Max_cnt>31)){//Зависит от fps
     error=4;
     //Serial.println(" | Error=4");
   }
@@ -305,7 +303,6 @@ bool RR_calc(int32_t maxs)
       searching_max = true;
       Vmin = maxs_prev;  
       result = true;
-      Serial.println("@@@@@@@@ RR beat @@@@@@"); 
     }
     else
     {
@@ -314,6 +311,5 @@ bool RR_calc(int32_t maxs)
     }
   }
   maxs_prev = maxs;
-  //Serial.println(searching_max);
   return result;
 }

@@ -35,7 +35,8 @@ void setup() {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Continuously taking samples from MAX30102.  Heart rate and SpO2 are calculated every ST seconds
-void loop() {
+void loop() 
+{
    //------------ Reading Sensor ---------------------
   for(uint16_t i=0;i<BUFFER_SIZE;i++)
   {
@@ -46,37 +47,41 @@ void loop() {
     temp_kfdata =(int32_t)Kalman_simple_filter(ir_buffer[i],KF_Q,KF_R); 
     temp_kfdata =(int32_t)ir_buffer[i]-temp_kfdata;
     IR_norm=Median_filter_small(temp_kfdata,7);
-    if (ir_buffer[i] < BAD_CONTACT_TH){
+    if (ir_buffer[i] < BAD_CONTACT_TH)
+    {
       //Serial.println("Bad contact");
       ptr=&Nbeats[0];
       RR_ptr=&RR_Nbeats[0];
       HR_cnt=0;
       RR_cnt=0;    
     }
-    else {
+    else 
+    {
       // Find MAX MIN
       res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
-      if (res.NewBeat){
+      if (res.NewBeat)
+      {
         //Average spo2 for visualization 
         spo2 = Median_filter_spo2(res.spo2);
         // Starting conditions
         if (HR_cnt <= HR_FIFOSIZE)
         {
-          if (HR_cnt<2){
+          if (HR_cnt<2)
             Nbeats[0]=Nsample;
-          }
-          else{
+          else
+          {
             HR = ((HR_cnt-1)*60*FS)/(Nsample-Nbeats[0]);
             Serial.print("HR=");Serial.print(HR);
-            Serial.print(" / SpO2=");Serial.println(floor(spo2));
-            }
+            Serial.print(" / SpO2=");Serial.println(floor(spo2),0);
+          }
           HR_cnt++;
         }
         // HR average for 20 beats 
-        else{
+        else
+        {
           HR = (HR_FIFOSIZE*60*FS)/(Nsample-*(ptr)); //ptr - oldest time stamp (end of circle FIFO)
           Serial.print("HR=");Serial.print(HR);
-          Serial.print(" / SpO2=");Serial.println(floor(spo2));
+          Serial.print(" / SpO2=");Serial.println(floor(spo2),0);
         }
         // FIFO buffer for HR time stamps 
         *(ptr)=Nsample;
@@ -89,19 +94,21 @@ void loop() {
         {
           if (RR_cnt <= RR_FIFOSIZE)
           {
-            if (RR_cnt<2){
+            if (RR_cnt<2)
               RR_Nbeats[0]=Nsample;
-            }
-            else{
+            else
+            {
               RR = ((RR_cnt-1)*60*FS)/(Nsample-RR_Nbeats[0]);
-              Serial.print("RR=");Serial.println(RR);
-              }
+
+              Serial.print("====================>> RR=");Serial.println(RR);
+            }
             RR_cnt++;
           }
           // HR average for 20 beats 
-          else{
+          else
+          {
             RR = (RR_FIFOSIZE*60*FS)/(Nsample-*(RR_ptr)); //ptr - oldest time stamp (end of circle FIFO)
-            Serial.print("RR=");Serial.println(RR);
+            Serial.print("====================>> RR=");Serial.println(RR);
           }
           // FIFO buffer for RR time stamps
           *(RR_ptr)=Nsample;
@@ -112,10 +119,12 @@ void loop() {
         }
         //ERRORS
         if (res.error>0)
+        {
           Serial.print("Error=");Serial.println(res.error);
-        if ((res.error==4)&&(HR_cnt >20))
-          Serial.println("Alarm! No heartbeats!");
+          if ((res.error==4)&&(HR_cnt >20))
+            Serial.println("Alarm! No heartbeats!");
         }
+      }
     }
   }
 }
