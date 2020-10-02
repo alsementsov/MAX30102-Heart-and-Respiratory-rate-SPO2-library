@@ -14,6 +14,7 @@
 #define FS 25  //sampling frequency (samples/second) -> Don't change!
 #define BUFFER_SIZE  (FS* 10) 
 #define HR_FIFOSIZE  20
+#define RR_FIFOSIZE  10
 
 // N of samples, FS*T, T - duration of continuous buffering data packet in seconds
 struct result

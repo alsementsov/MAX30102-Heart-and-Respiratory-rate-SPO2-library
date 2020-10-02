@@ -305,7 +305,7 @@ bool RR_calc(int32_t maxs)
       searching_max = true;
       Vmin = maxs_prev;  
       result = true;
-      Serial.println("---RR beat---"); 
+      Serial.println("@@@@@@@@ RR beat @@@@@@"); 
     }
     else
     {
@@ -314,6 +314,6 @@ bool RR_calc(int32_t maxs)
     }
   }
   maxs_prev = maxs;
-  Serial.println(searching_max);
+  //Serial.println(searching_max);
   return result;
 }
