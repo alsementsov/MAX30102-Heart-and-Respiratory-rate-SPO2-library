@@ -1,11 +1,9 @@
 #include <Arduino.h>
 #define STOPPER 0 /* Smaller than any datum */
-#define MEDIAN_FILTER_SIZE 81
 #define FSIZE_SLOW 7
 #define FSIZE_FAST 7
 #define BAD_CONTACT_TH 80000
 #define DELAY_SIZE 2
-
 #define KF_Q 0.00002
 #define KF_R 0.01
 

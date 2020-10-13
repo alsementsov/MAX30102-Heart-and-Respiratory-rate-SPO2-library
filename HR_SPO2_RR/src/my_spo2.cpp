@@ -149,11 +149,9 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
   static uint32_t Vrmin_new=0;
   
   static uint8_t error;
-  bool NewBeat;
-  bool RR_NewBeat;
+  bool NewBeat=false;
+  bool RR_NewBeat=false;
   float spo2=0;
-  NewBeat=false;
-  RR_NewBeat = false;
 
   // -------- Поиск максимумов и минимумов в сырых данных -----------------
   if (IR>=Virmax){

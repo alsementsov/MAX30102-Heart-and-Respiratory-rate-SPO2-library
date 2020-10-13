@@ -20,7 +20,7 @@ uint32_t* RR_ptr = RR_Nbeats;
 uint32_t HR;
 uint32_t RR;
 float spo2;
-uint8_t HR_cnt;
+uint8_t cnt_after_badcontact;
 uint8_t RR_cnt;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,29 +54,29 @@ void loop()
       //Serial.println("Bad contact");
       ptr=&Nbeats[0];
       RR_ptr=&RR_Nbeats[0];
-      HR_cnt=0;
+      cnt_after_badcontact=0;
       RR_cnt=0;    
     }
     else 
     {
       // Find MAX MIN
       res = MaxMin_search_stream(IR_norm,ir_buffer[i],red_buffer[i]);
-      if (res.NewBeat)
+      if (res.NewBeat==1)
       {
         //Average spo2 for visualization 
         spo2 = Median_filter_spo2(res.spo2);
         // Starting conditions
-        if (HR_cnt <= HR_FIFOSIZE)
+        if (cnt_after_badcontact <= HR_FIFOSIZE)
         {
-          if (HR_cnt<2)
+          if (cnt_after_badcontact<2)
             Nbeats[0]=Nsample;
           else
           {
-            HR = ((HR_cnt-1)*60*FS)/(Nsample-Nbeats[0]);
+            HR = ((cnt_after_badcontact-1)*60*FS)/(Nsample-Nbeats[0]);
             Serial.print("HR=");Serial.print(HR);
             Serial.print(" / SpO2=");Serial.println(floor(spo2),0);
           }
-          HR_cnt++;
+          cnt_after_badcontact++;
         }
         // HR average for 20 beats 
         else
@@ -123,7 +123,7 @@ void loop()
         if (res.error>0)
         {
           Serial.print("Error=");Serial.println(res.error);
-          if ((res.error==4)&&(HR_cnt >20))
+          if ((res.error==4)&&(cnt_after_badcontact >20))
             Serial.println("Alarm! No heartbeats!");
         }
       }
