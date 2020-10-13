@@ -29,7 +29,7 @@ uint8_t CheckForErrors(uint16_t T,uint16_t Tmax,float spo2,int32_t Vl,int32_t Vc
     return Error;
 };
 
-int32_t Median_filter_small(int32_t datum,int MF_SIZE)
+int32_t Median_filter(int32_t datum,int MF_SIZE)
 {
   struct pair
   {
@@ -99,7 +99,7 @@ int32_t Median_filter_small(int32_t datum,int MF_SIZE)
   }
   return median->value;
 }
-float Kalman_simple_filter1(int32_t val,float Q,float R)
+float Kalman_simple_filter1(uint32_t val,float Q,float R)
 {
   static float Xe = 0;
   static float Xp;
@@ -179,11 +179,13 @@ struct result MaxMin_search_stream(int32_t IRnorm,uint32_t IR,uint32_t RED)
       //NewBeat=true;// Первая версия (в Python этой строчки здесь нет)
       spo2=Spo2_calc(Virmax,Virmin,Virmin_new,Vrmax,Vrmin,Vrmin_new);
       error = CheckForErrors(Min_cnt,Max_cnt,spo2,Virmin,Virmax,Virmin_new);
+      //RR_NewBeat = RR_calc(IRnorm_prev);
       if (error<=1)
       {
-          NewBeat=true;//NEW Heart BEAT!!!
+        NewBeat=true;//NEW Heart BEAT!!!
           // Respiratory analysis
-          RR_NewBeat = RR_calc(IRnorm_prev);
+        RR_NewBeat = RR_calc(IRnorm_prev);
+          //searching_max = true;
       }
       Min_cnt=0;
       Max_cnt=0;
@@ -316,17 +318,12 @@ bool RR_calc(int32_t maxs)
     // Serial.print("Vmin_new="+str(sample_prv));
     // Serial.print("ampl1"+str(ampl1));
     // Serial.print("ampl2="+str(ampl2));
-    if (((ampl1+ampl2) > 75)and(ampl1>15)and(ampl2>15))
+    if (((ampl1+ampl2) > 75)&&(ampl1>15)&&(ampl2>15))
     {
-      searching_max = true;
-      Vmin = maxs_prev;  
       result = true;
     }
-    else
-    {
-      searching_max=true;
-      Vmin = maxs_prev;
-    }
+    searching_max=true;
+    Vmin = maxs_prev;
   }
   maxs_prev = maxs;
   return result;
